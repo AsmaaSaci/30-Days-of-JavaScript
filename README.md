@@ -1,4 +1,4 @@
-# 🚀 30 Days of JavaScript Challenges/
+# 🚀 30 Days of JavaScript Challenges
 
 Welcome to **30 Days of JavaScript**! 🎉  
 A collection of **35 JavaScript challenges** to level up your coding skills, from basics to advanced topics.  
