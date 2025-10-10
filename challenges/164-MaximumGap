@@ -1,0 +1,19 @@
+var maximumGap = function(nums) {
+    if (nums.length < 2) return 0
+    let hi = 0, lo = 2e9, ans = 0
+    for (let n of nums)
+        hi = Math.max(hi, n), lo = Math.min(lo, n)
+    let bsize = ~~((hi - lo) / (nums.length - 1)) || 1,
+        buckets = Array.from({length: ~~((hi - lo) / bsize) + 1}, () => [])
+    for (let n of nums)
+        buckets[~~((n - lo) / bsize)].push(n)
+    let currhi = 0
+    for (let b of buckets) {
+        if (!b.length) continue
+        let prevhi = currhi || b[0], currlo = b[0]
+        for (let n of b) 
+            currhi = Math.max(currhi, n), currlo = Math.min(currlo, n)
+        ans = Math.max(ans, currlo - prevhi)
+    }
+    return ans
+};
