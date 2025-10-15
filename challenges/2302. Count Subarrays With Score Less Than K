@@ -1,0 +1,13 @@
+var countSubarrays = function(nums, k) {
+    let res = 0, partSum = 0, left = 0;
+
+    for (let right = 0; right < nums.length; right++) {
+        partSum += nums[right];
+        while (partSum * (right - left + 1) >= k) {
+            partSum -= nums[left++];
+        }
+        res += right - left + 1;
+    }
+
+    return res;
+};
