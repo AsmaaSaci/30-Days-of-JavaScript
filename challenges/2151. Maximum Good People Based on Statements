@@ -1,0 +1,43 @@
+/**
+ * @param {number[][]} statements
+ * @return {number}
+ */
+var maximumGood = function(statements) {
+    const len = statements.length
+    const ub = 1 << len
+
+
+    let result = 0
+    forEachMask:
+    for (let mask = 0; mask < ub; mask++) {
+        for (let i = 0, bit = 1; i < len; i++, bit <<= 1) {
+            // assume the ith person is good
+            if (mask & bit) {
+                const row = statements[i]
+                for (const [j, val] of row.entries()) {
+                    if (val === 2)  continue
+
+                    const BIT = 1 << j
+                    if (val === 1) {
+                        if ((BIT & mask) === 0) {
+                            continue forEachMask
+                        }
+                    } else {
+                        if (BIT & mask) {
+                            continue forEachMask
+                        }
+                    }
+                }
+            }
+        }
+
+        let outcome = 0
+        for (let x = mask; x; x &= (x - 1))
+            outcome++
+
+        result = Math.max(result, outcome)
+    }
+
+
+    return result
+};
