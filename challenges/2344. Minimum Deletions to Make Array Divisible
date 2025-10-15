@@ -1,0 +1,41 @@
+var minOperations = function(nums, numsDivide) {
+    
+	//First, we have to find the common divisor for all the elements of array
+    let cmn_int = null
+	//if the length of the array is 1
+    if(numsDivide.length == 1){
+        cmn_int = numsDivide[0]
+	//if the length > 1, getting the first and second num
+    }else{
+        cmn_int = gcd(numsDivide[0], numsDivide[1])
+		//for each iteration, we find the gcd
+        for(let i = 2; i<numsDivide.length; i++){
+            cmn_int = gcd(cmn_int, numsDivide[i])
+        }
+    }
+       
+    let count = 0
+	//sort the numsDivide in an ascending order
+    nums.sort((a, b) => a-b)
+	
+	//check whether the gcd is divisible by the current item
+    for(let i = 0; i<nums.length; i++){
+		//if not divisible, increment count
+        if(cmn_int % nums[i] != 0){
+            count++
+            continue
+		//if divisible, break the loop => we found the num
+        }else{
+            break
+        }
+    }
+    
+    return count == nums.length ? -1 : count
+        
+	//a reusable function for finding the greatest common divisor	
+    function gcd(x, y) {
+        if (y === 0) return x;
+        return gcd(y, x % y);
+    }
+    
+};
