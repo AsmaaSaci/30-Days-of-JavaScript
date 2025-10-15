@@ -1,0 +1,26 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var countPairs = function(nums, k) {
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+    const freq = new Map(); // Store the frequency of gcds of nums[i] and k
+    let count = 0;
+
+    for (const num of nums) {
+        const gcdA = gcd(num, k);
+        
+        // Count all previous numbers whose gcd with k pairs with gcdA
+        for (const [gcdB, f] of freq.entries()) {
+            if ((gcdA * gcdB) % k === 0) {
+                count += f;
+            }
+        }
+
+        // Update the frequency of the current gcd
+        freq.set(gcdA, (freq.get(gcdA) || 0) + 1);
+    }
+
+    return count;
+};
