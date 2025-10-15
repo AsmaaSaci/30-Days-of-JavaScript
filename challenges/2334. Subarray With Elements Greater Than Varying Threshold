@@ -1,0 +1,37 @@
+class UF {
+	constructor(n) {
+		this.setSize = Array.from({ length: n }, (_, i) => 1);
+		this.setRoot = Array.from({ length: n }, (_, i) => i);
+	}
+	findSetRoot(x) {
+		if (this.setRoot[x] !== x) {
+			this.setRoot[x] = this.findSetRoot(this.setRoot[x]);
+		}
+		return this.setRoot[x];
+	}
+	mergeSets(x, y) {
+		const srx = this.findSetRoot(x);
+		const sry = this.findSetRoot(y);
+		if (srx === sry) return;
+		this.setRoot[sry] = srx;
+		this.setSize[srx] += this.setSize[sry];
+	}
+}
+
+var validSubarraySize = function (a, threshold) {
+	const n = a.length;
+	let uf = new UF(n);
+	const eiDescArr = a.map((x, i) => [x, i]).sort((a, b) => b[0] - a[0]);
+
+	const vis = Array(n).fill(0);
+	for (const [e, i] of eiDescArr) {
+		if (vis[i - 1]) uf.mergeSets(i, i - 1);
+		if (vis[i + 1]) uf.mergeSets(i, i + 1);
+
+		if (e > threshold / uf.setSize[uf.findSetRoot(i)]) {
+			return uf.setSize[uf.findSetRoot(i)];
+		}
+		vis[i] = 1;
+	}
+	return -1; // no valid subarray is found
+};
