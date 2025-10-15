@@ -1,0 +1,58 @@
+/**
+ * @param {character[]} keys
+ * @param {string[]} values
+ * @param {string[]} dictionary
+ */
+
+var Encrypter = function(keys, values, dictionary) {
+    this.encryptMap = new Map ();
+    this.decryptMap = new Map ();
+
+    for (let i = 0; i < keys.length; i++) {
+        this.encryptMap.set(keys[i], values[i]);
+    }
+
+    for (const word of dictionary) {
+        let encrypted = '';
+        for (let i = 0; i < word.length; i++) {
+            const char = word[i];
+            encrypted += this.encryptMap.get(char);
+        }
+
+        if (this.decryptMap.has(encrypted)) {
+            this.decryptMap.get(encrypted).push(word);
+        } else {
+            this.decryptMap.set(encrypted, [word]);
+        }
+    }
+};
+
+/** 
+ * @param {string} word1
+ * @return {string}
+ */
+Encrypter.prototype.encrypt = function(word1) {
+    let encrypted = '';
+
+    for (const char of word1) {
+        encrypted += this.encryptMap.get(char);
+    }
+
+    return encrypted;
+};
+
+/** 
+ * @param {string} word2
+ * @return {number}
+ */
+Encrypter.prototype.decrypt = function(word2) {
+
+   return this.decryptMap.get(word2)?.length || 0;
+};
+
+/** 
+ * Your Encrypter object will be instantiated and called as such:
+ * var obj = new Encrypter(keys, values, dictionary)
+ * var param_1 = obj.encrypt(word1)
+ * var param_2 = obj.decrypt(word2)
+ */
