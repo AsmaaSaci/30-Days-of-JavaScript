@@ -1,0 +1,55 @@
+/**
+ * @param {number} n
+ * @param {number} threshold
+ * @param {number[][]} queries
+ * @return {boolean[]}
+ */
+var areConnected = function(n, threshold, queries) {
+    const nPlus1 = 1 + n, halfPlus1 = 1 + (n >> 1)
+    function Node() {
+        this.parent = null
+    }
+    const nodes = new Array(nPlus1)
+    for (const i of nodes.keys())
+        nodes[i] = new Node()
+
+    function connect(p, q) {
+        for (; p.parent; p = p.parent);
+        for (; q.parent; q = q.parent);
+
+        if (p !== q) {
+            if (Math.random() < 0.5)
+                p.parent = q
+            else
+                q.parent = p
+        }
+    }
+
+    function areConnected(p, q) {
+        for (; p.parent; p = p.parent);
+        for (; q.parent; q = q.parent);
+        return p === q
+    }
+    
+
+    const factor2last = [], factor2done = new Array(1 + n)
+    for (let factor = 1 + threshold; factor < halfPlus1; factor++) {
+        if (factor2done[factor])    continue
+
+        for (let val = factor; val < nPlus1; val += factor) {
+            factor2done[val] = true
+            const last = factor2last[factor]
+            const node = nodes[val]
+            if (last !== undefined) {
+                connect(last, node)
+            }
+            
+            factor2last[factor] = node
+        }
+    }
+
+
+    return queries.map(([f, t]) => {
+        return areConnected(nodes[f], nodes[t])
+    })
+};
