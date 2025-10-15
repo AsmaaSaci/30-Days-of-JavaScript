@@ -1,0 +1,76 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var minimumDifference = function (nums) {
+  const totalSum = nums.reduce((acc, curr) => acc + curr, 0);
+  const half = nums.length >> 1;
+  const mask = (1 << half) - 1;
+
+  const left = new Array(half + 1).fill().map(() => []);
+  const right = new Array(half + 1).fill().map(() => []);
+
+  for (let i = 0; i <= mask; i++) {
+    let k = 0;
+    let sumLeft = 0;
+    let sumRight = 0;
+
+    for (let j = 0; j < half; j++) {
+      if (i & (1 << j)) {
+        k++;
+        sumLeft += nums[j];
+        sumRight += nums[j + half];
+      }
+    }
+    left[k].push(sumLeft);
+    right[k].push(sumRight);
+  }
+
+  let ans = Infinity;
+  ans = Math.min(ans, Math.abs(totalSum - 2 * left[half][0]));
+  ans = Math.min(ans, Math.abs(totalSum - 2 * right[half][0]));
+
+  right.forEach((group) => group.sort((a, b) => a - b));
+
+  for (let size1 = 1; size1 < half; size1++) {
+    const size2 = half - size1;
+    if (!right[size2].length) continue;
+
+    for (const leftVal of left[size1]) {
+      const targetForRight = totalSum / 2 - leftVal;
+      const idx = bisectLeft(right[size2], targetForRight);
+
+      if (idx < right[size2].length) {
+        ans = Math.min(
+          ans,
+          Math.abs(totalSum - 2 * (leftVal + right[size2][idx]))
+        );
+      }
+
+      if (idx - 1 >= 0) {
+        ans = Math.min(
+          ans,
+          Math.abs(totalSum - 2 * (leftVal + right[size2][idx - 1]))
+        );
+      }
+    }
+  }
+
+  return ans;
+};
+
+function bisectLeft(array, target) {
+  let low = 0;
+  let high = array.length;
+
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (array[mid] < target) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+
+  return low;
+}
