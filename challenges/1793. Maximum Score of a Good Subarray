@@ -1,0 +1,34 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var maximumScore = function(nums, k) {
+    let minimum = nums[k];
+    let max_score = nums[k];
+    let i = k;
+    let j = k;
+    let n = nums.length;
+
+    while (i > 0 || j < n - 1) {
+        // Check if we can expand the subarray
+        if (i > 0 && j < n - 1) {
+            // Expand the subarray towards the side with the larger neighbor
+            if (nums[i - 1] >= nums[j + 1]) {
+                i--;
+            } else {
+                j++;
+            }
+        } else if (i === 0 && j < n - 1) {
+            j++;
+        } else if (j === n - 1 && i > 0) {
+            i--;
+        }
+
+        // Update the minimum and the maximum score
+        minimum = Math.min(minimum, nums[i], nums[j]);
+        max_score = Math.max(max_score, minimum * (j - i + 1));
+    }
+
+    return max_score;
+}
