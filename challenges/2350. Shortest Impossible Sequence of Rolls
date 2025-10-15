@@ -1,0 +1,10 @@
+const shortestSequence = (e, t) => {
+    let n = 0;
+    let o = new Set;
+
+    for (let r of e) {
+        o.add(r), o.size === t && (n += 1, o = new Set);
+    }
+
+    return n + 1;
+}
