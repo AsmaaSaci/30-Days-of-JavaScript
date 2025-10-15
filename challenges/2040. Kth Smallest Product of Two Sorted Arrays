@@ -1,0 +1,59 @@
+/**
+ * @param {number[]} nums1
+ * @param {number[]} nums2
+ * @param {number} k
+ * @return {number}
+ */
+var kthSmallestProduct = function(nums1, nums2, k) {
+
+    const countPairs = (x) => {
+        let count = 0;
+        
+        for (let num of nums1) {
+            let l = 0, r = n2;
+
+            if (num === 0) {
+                if (x >= 0) count += n2;
+                continue;
+            }
+
+            let threshold = num > 0 ? Math.floor(x / num) : Math.ceil(x / num);
+
+            if (num > 0) {
+                while (l < r) {
+                    let m = Math.floor( l+ ( r - l ) / 2);
+                    if ( nums2[m] <=  threshold ) l = m + 1;
+                    else r = m;
+                }
+                count += l;
+
+            } else { // num < 0
+                while (l < r) {
+                    let m = Math.floor(l+ ( r - l ) / 2);
+                    if ( nums2[m] >=  threshold ) r = m;
+                    else l = m + 1;
+                }
+                count += n2 - l;
+            }
+        }
+        return count;
+    };
+
+    const n2 = nums2.length;
+    let candidates = [
+        nums1[0] * nums2[0],
+        nums1[0] * nums2[n2 - 1],
+        nums1[nums1.length - 1] * nums2[0],
+        nums1[nums1.length - 1] * nums2[n2 - 1]
+    ];
+    let leftMinPrd = Math.min(...candidates);
+    let rightMaxPrd = Math.max(...candidates);
+
+    while (leftMinPrd < rightMaxPrd) {
+            let mid = Math.floor(leftMinPrd + ( rightMaxPrd - leftMinPrd) / 2);
+            if (countPairs(mid) < k) leftMinPrd = mid + 1;
+            else rightMaxPrd = mid;
+        }
+
+    return leftMinPrd;
+};
