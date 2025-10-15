@@ -1,0 +1,63 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var sumOfFlooredPairs = function(nums) {
+    // sort the array
+    nums.sort((a, b) => a - b)
+    const len = nums.length, lenM = len - 1
+    const modMe = 1e9 + 7
+
+    // get the freqs of each val
+    const val2freq = new Map()
+    for (const val of nums) {
+        val2freq.set(val, 1 + (val2freq.get(val) ?? 0))
+    }
+
+
+    let result = 0
+    for (let i = 0; i < len; ) {
+        const val = nums[i];
+
+        const freq = val2freq.get(val)
+        let low, high
+        low = i
+        let sf = i
+
+        while (sf < len) {
+            const times = Math.floor(nums[sf] / val)
+            high = lenM
+
+            // find latest low where 
+            // Math.floor(nums[low] / val) === times
+            while (low < high) {
+                const mid = (1 + low + high) >> 1
+                if (Math.floor(nums[mid] / val) === times)
+                    low = mid
+                else
+                    high = mid - 1
+            }
+
+            const size = 1 + low - sf
+            // for times: 1, subtract the occurences of val
+            const rmg = times > 1 ? size : size - freq
+            const outcome = rmg * freq * times
+            result = (result + outcome) % modMe
+
+            low = sf = 1 + low
+        }
+
+        // important: go to the next distinct val directly, 
+        // not the next occurence of val
+        i += freq
+    }
+
+    // add the 'inside outcome' for each val
+    for (const freq of val2freq.values()) {
+        const outcome = freq ** 2
+        result = (result + outcome) % modMe
+    }
+
+
+    return result
+};
