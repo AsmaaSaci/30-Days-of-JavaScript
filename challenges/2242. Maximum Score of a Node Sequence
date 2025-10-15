@@ -1,0 +1,69 @@
+/**
+ * @param {number[]} scores
+ * @param {number[][]} edges
+ * @return {number}
+ */
+var maximumScore = function(scores, edges) {
+    const len = scores.length
+    function Node(i, score) {
+        this.i = i
+        this.score = score
+        this.neighs = []
+    }
+
+    // build nodes
+    const nodes = new Array(len)
+    for (const [i, score] of scores.entries())
+        nodes[i] = new Node(i, score)
+    
+    // build edges
+    for (const [f, t] of edges) {
+        const F = nodes[f], T = nodes[t]
+        F.neighs.push(T)
+        T.neighs.push(F)
+    }
+
+    // sort neighs for each node by score desc
+    const cmp = (A, B) => B.score - A.score
+    for (const node of nodes) {
+        node.neighs.sort(cmp)
+    }
+
+
+    // for the (connected) nodes F and T, 
+    // find the best nodes (maximum sum of scores) a and b such that:
+    // 1. a is a neigh of F and b is a neigh of T;
+    // 2. F.neighs.indexOf(a) >= i and T.neighs.indexOf(b)>= j
+    // 3. a !== T and b !== F
+    // 4. a !== b
+    function findBestPair(F, T, i = 0, j = 0) {
+        const A = F.neighs, B = T.neighs
+        if (i === A.length || j === B.length)
+            return -Infinity
+
+        const a = A[i], b = B[j]
+        if (a === T)    return findBestPair(F, T, i + 1, j)
+        if (b === F)    return findBestPair(F, T, i, j + 1)
+
+        if (a === b) {
+            return Math.max(findBestPair(F, T, i + 1, j), findBestPair(F, T, i, j + 1))
+        }
+
+        return a.score + b.score
+    }
+
+    let result = -Infinity
+    // use each edge as two middle points
+    for (const [f, t] of edges) {
+        const F = nodes[f], T = nodes[t]
+        if (F.neighs.length < 2 || T.neighs.length < 2)
+            continue
+        
+        const outcome = F.score + T.score + findBestPair(F, T)
+        result = Math.max(result, outcome)
+    }
+
+
+    if (result === -Infinity)   result = -1
+    return result
+};
