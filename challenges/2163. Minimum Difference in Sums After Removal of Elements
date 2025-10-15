@@ -1,0 +1,121 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+
+class MaxPQ {
+    constructor() {
+        this.heap = [];
+    }
+
+    size() {
+        return this.heap.length;
+    }
+
+    enqueue(val) {
+        this.heap.push(val);
+        this.bubbleUp(this.heap.length - 1);
+    }
+
+    dequeue() {
+        if (this.size() === 0) return null;
+        const max = this.heap[0];
+        const end = this.heap.pop();
+        if (this.size() > 0) {
+            this.heap[0] = end;
+            this.bubbleDown(0);
+        }
+        return { element: max };
+    }
+
+    bubbleUp(index) {
+        let current = index;
+        while (current > 0) {
+            let parent = Math.floor((current - 1) / 2);
+            if (this.heap[current] > this.heap[parent]) {
+                [this.heap[current], this.heap[parent]] = [this.heap[parent], 
+                this.heap[current]];
+                current = parent;
+            } else {
+                break;
+            }
+        }
+    }
+
+    bubbleDown(index) {
+        let current = index;
+        const length = this.heap.length;
+
+        while (true) {
+            let left = 2 * current + 1;
+            let right = 2 * current + 2;
+            let largest = current;
+
+            if (left < length && this.heap[left] > this.heap[largest]) {
+                largest = left;
+            }
+
+            if (right < length && this.heap[right] > this.heap[largest]) {
+                largest = right;
+            }
+
+            if (largest !== current) {
+                [this.heap[current], this.heap[largest]] = [this.heap[largest], 
+                this.heap[current]];
+                current = largest;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+
+var minimumDifference = function(nums) {
+    const n = nums.length / 3;
+
+    // Step 1: we track min sum of n elements from left to right
+    const leftHeap = new MaxPQ(); // max-heap
+    let leftSum = 0;
+    const leftSums = new Array(2 * n).fill(0);
+
+    for (let i = 0; i < 2 * n; i++) {
+        leftHeap.enqueue(nums[i]);
+        leftSum += nums[i];
+
+        if (leftHeap.size() > n) {
+            leftSum -= leftHeap.dequeue().element;
+        }
+
+        if (i >= n - 1) {
+            leftSums[i] = leftSum;
+        }
+    }
+
+    // Step 2: we track max sum of n elements from right to left using negation
+    const rightHeap = new MaxPQ(); // we simulate min-heap
+    let rightSum = 0;
+    const rightSums = new Array(2 * n).fill(0);
+
+    for (let i = nums.length - 1; i >= n; i--) {
+        rightHeap.enqueue(-nums[i]); // we negate to simulate min-heap
+        rightSum += nums[i];
+
+        if (rightHeap.size() > n) {
+            rightSum += rightHeap.dequeue().element; // we subtract negative = add positive
+        }
+
+        if (i <= 2 * n) {
+            rightSums[i - 1] = rightSum;
+        }
+    }
+
+    // Step 3: we find minimum difference
+    let minDiff = Infinity;
+    for (let i = n - 1; i < 2 * n; i++) {
+        minDiff = Math.min(minDiff, leftSums[i] - rightSums[i]);
+    }
+
+    return minDiff;
+};
+
