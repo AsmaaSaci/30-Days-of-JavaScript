@@ -1,0 +1,13 @@
+/**************************\U0001f60e**************************/
+function earliestFullBloom(plantTime, growTime) {
+    let array = [];
+    plantTime.forEach((time, i) => array.push([time, growTime[i]]));
+    array.sort((a, b) => b[1] - a[1]);
+    let totalTime = 0;
+    let totalPlantTime = 0;
+    array.forEach(a => {
+        totalPlantTime += a[0];
+        totalTime = Math.max(totalTime, totalPlantTime + a[1]);
+    });
+    return totalTime;
+};
