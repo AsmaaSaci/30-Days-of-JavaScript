@@ -1,0 +1,38 @@
+function maxHappyGroups(bz, groups) {
+    const dp = new Map();
+
+    function dfs(cnt, left) {
+        const key = cnt.toString();
+        if (dp.has(key)) {
+            return dp.get(key);
+        }
+
+        let res = 0;
+        for (let j = 1; j < bz; ++j) {
+            if (cnt[j] > 0) {
+                --cnt[j];
+                res = Math.max(res, (left === 0) + dfs(cnt, (bz + left - j) % bz));
+                ++cnt[j];
+            }
+        }
+
+        dp.set(key, res);
+        return res;
+    }
+
+    const cnt = new Array(bz).fill(0);
+    let res = 0;
+    for (const group of groups) {
+        if (group % bz === 0) {
+            ++res;
+        } else if (cnt[bz - group % bz] > 0) {
+            --cnt[bz - group % bz];
+            ++res;
+        } else {
+            ++cnt[group % bz];
+        }
+    }
+
+    return dfs(cnt, 0) + res;
+}
+
