@@ -1,0 +1,38 @@
+let memo = new Int32Array(16384);
+
+/**
+ * @param {number[]} nums1
+ * @param {number[]} nums2
+ * @return {number}
+ */
+var minimumXORSum = function (nums1, nums2) {
+  let n = nums1.length;
+
+  memo.fill(-1, 0, 1 << n);
+  let available = (1 << n) - 1;
+
+  function bt(d) {
+    if (d == n) { 
+      return 0;
+    }
+
+    if (memo[available] >= 0) {
+      return memo[available];
+    }
+
+    let btRes = 1e10;
+    for (let b = 0; b < n; ++b){ 
+      if (!(available & (1 << b))) continue;
+      let x = nums1[b] ^ nums2[d];
+
+      available ^= 1 << b;
+      btRes = Math.min(btRes, bt(d + 1) + x);
+      available ^= 1 << b;
+    }
+
+    memo[available] = btRes;
+    return btRes;
+  }
+
+  return bt(0);
+};
