@@ -1,0 +1,38 @@
+/**
+ * @param {number[][]} grid
+ * @param {number} k
+ * @return {number}
+ */
+const numberOfPaths = (grid, k) => {
+
+    const gridHeight = grid.length;
+    const gridWidth = grid[0].length;
+    const paths = new Array(gridHeight).fill(0).map(filler => new Array(gridWidth).fill(0).map(filler => new Object()));
+    const mod = Math.pow(10, 9) + 7;
+
+    for(let height = 0; height < gridHeight; height++) {
+        for(let width = 0; width < gridWidth; width++) {
+            for(let remainder = 0; remainder < k; remainder++) {
+                paths[height][width][remainder] = 0;
+            }
+            if(height === 0 && width === 0) {
+                paths[height][width][grid[height][width] % k] += 1;
+            } else if(height === 0) {
+                for(let previousRemainder = 0; previousRemainder < k; previousRemainder++) {
+                    paths[height][width][(previousRemainder + grid[height][width]) % k] += paths[height][width - 1][previousRemainder];
+                }
+            } else if(width === 0) {
+                for(let previousRemainder = 0; previousRemainder < k; previousRemainder++) {
+                    paths[height][width][(previousRemainder + grid[height][width]) % k] += paths[height - 1][width][previousRemainder];
+                }
+            } else {
+                for(let previousRemainder = 0; previousRemainder < k; previousRemainder++) {
+                    paths[height][width][(previousRemainder + grid[height][width]) % k] += paths[height][width - 1][previousRemainder] % mod;
+                    paths[height][width][(previousRemainder + grid[height][width]) % k] += paths[height - 1][width][previousRemainder] % mod;
+                }
+            }
+        }
+    }
+
+    return paths[gridHeight - 1][gridWidth - 1][0] % mod;
+}; 
