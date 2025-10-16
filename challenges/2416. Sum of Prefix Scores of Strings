@@ -1,0 +1,37 @@
+class TrieNode {
+    constructor() {
+        this.count = 0;
+        this.children = new Map();
+    }
+}
+
+/**
+ * @param {string[]} words
+ * @return {number[]}
+ */
+var sumPrefixScores = function (words) {
+
+    const root = new TrieNode();
+    const answer = Array(words.length).fill(0);
+
+    //insert
+    for (const word of words) {
+        let curr = root;
+        for (const char of word) {
+            if (!curr.children.has(char)) curr.children.set(char, new TrieNode());
+            curr = curr.children.get(char);
+            ++curr.count;
+        }
+    }
+
+    //search
+    for (let i = 0; i < words.length; i++) {
+        let curr = root;
+        for (const char of words[i]) {
+            curr = curr.children.get(char);
+            answer[i] += curr.count;
+        }
+    }
+
+    return answer;
+};
