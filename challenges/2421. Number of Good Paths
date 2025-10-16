@@ -1,0 +1,91 @@
+/**
+ * @param {number[]} vals
+ * @param {number[][]} edges
+ * @return {number}
+ */
+var numberOfGoodPaths = function(vals, edges) {
+
+    const graph = new Map();
+    for (const [s, e] of edges) {
+        addMap(s, e);
+        addMap(e, s);
+    }
+
+    function addMap(s, e) {
+        if (!graph.has(s)) {
+            graph.set(s, [e]);
+        } else {
+            const a = graph.get(s);
+            a.push(e);
+            graph.set(s, a);
+        }
+    }
+
+    const valueToNodes = new Map();
+    for (let i = 0; i < vals.length; i++) {
+        const v = vals[i];
+        if (valueToNodes.has(v)) {
+            const a = valueToNodes.get(v);
+            a.push(i);
+            valueToNodes.set(v, a);
+        } else {
+            valueToNodes.set(v, [i]);
+        }
+    }
+
+    const uf = new UnionFind(vals.length);
+
+    const sortedVals = Array.from(valueToNodes.keys()).sort((a, b) => a-b);
+    let goodPath = 0;
+
+    for (const v of sortedVals) {
+        for (const node of valueToNodes.get(v)) {
+            if (graph.has(node)) {
+                for (const neighbor of graph.get(node)) {
+                    if (v >= vals[neighbor]) {
+                        uf.union(node, neighbor);
+                    }
+                }
+            }
+        }
+
+        const groups = new Map();
+        for (const node of valueToNodes.get(v)) {
+            const parent = uf.find(node);
+            if (groups.has(parent)) {
+                groups.set(parent, groups.get(parent)+1);
+            } else {
+                groups.set(parent, 1);
+            }
+        }
+
+        for (const s of groups.values()) {
+            goodPath += (s+1) * s / 2;
+        }
+    }
+    return goodPath;
+};
+
+class UnionFind {
+    constructor(count) {
+        this.count = count;
+        this.parents = Array(count).fill(0).map((val, index) => index);
+    }
+
+    find(x) {
+        if (this.parents[x] != x) {
+            this.parents[x] = this.find(this.parents[x]);
+        }
+        return this.parents[x];
+    }
+
+    union(p, q) {
+        const pRoot = this.find(p);
+        const qRoot = this.find(q);
+        if (pRoot == qRoot) {
+            return;
+        }
+        this.parents[pRoot] = qRoot;
+        this.count--;
+    }
+}
