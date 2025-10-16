@@ -1,0 +1,45 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+
+// nums: [1,2,3,4,3,5,4,3]
+// numsShift: [0,0,5,3,0,0,0,0]
+
+var numberOfGoodPartitions = function(nums) {    
+    const firstSeenAtIndex = new Map();
+    const numsShift = new Array(nums.length).fill(0);
+    
+    for (let i = 0; i < nums.length; i++) {
+        const curr = nums[i];
+        
+        if (firstSeenAtIndex.has(curr)) {            
+            const firstSeenAt = firstSeenAtIndex.get(curr);
+            
+            numsShift[firstSeenAt] = i - firstSeenAt;
+        } else {
+            firstSeenAtIndex.set(curr, i);
+        }
+    }
+    
+    let connected = 0;
+    let currEnd = 0;
+        
+    for (let i = 0; i < numsShift.length; i++) {        
+        currEnd = Math.max(currEnd, i + numsShift[i]);
+        
+        if (currEnd === i) connected++;
+    }
+        
+    return subArrayNum(connected);
+};
+
+function subArrayNum(uniqueNum) {
+    let result = 1;
+    
+    for (let i = 0; i < uniqueNum - 1; i++) {
+        result = (result * 2) % (10**9 + 7);
+    }
+    
+    return result;
+}
