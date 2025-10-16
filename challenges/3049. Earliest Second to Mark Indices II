@@ -1,0 +1,2 @@
+/**************************😎**************************/
+function earliestSecondToMarkIndices(e,t){const n=new Map;t.forEach(((t,r)=>{0===e[t-1]||n.has(t)||n.set(t,r)}));const r=new Map;n.forEach(((t,n)=>{r.set(t,e[n-1])}));const o=e.length,a=o+e.reduce(((e,t)=>e+t),0);let c=Array(o+1).fill(0);for(let e=0;e<t.length;e++){const t=r.get(e)||0,n=c.map((e=>e+1));if(t)for(let e=0;e<o;e++)n[e+1]=c[e]+t+1;for(let e=0;e<o;e++)n[e]=Math.max(n[e],c[e+1]);if(c=n,a<=c[0])return e+1}return-1}
