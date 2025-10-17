@@ -1,0 +1,50 @@
+/**
+ * @param {number[]} nums
+ * @param {number[]} queries
+ * @return {number[]}
+ */
+var gcdValues = function(nums, queries) {
+    const S = Math.max(...nums) + 1;
+    const gcdmul = new Array(S).fill(0);
+    const qz = new Array(S).fill(0);
+
+    for (let t of nums) {
+        gcdmul[t]++;
+    }
+
+    for (let i = 1; i < S; ++i) {
+        let tt = 0;
+        for (let j = i; j < S; j += i) {
+            tt += gcdmul[j];
+        }
+        gcdmul[i] = Math.floor(tt * (tt - 1) / 2); 
+    }
+
+    for (let i = S - 1; i >= 1; --i) {
+        for (let j = i + i; j < S; j += i) {
+            gcdmul[i] -= gcdmul[j];
+        }
+    }
+
+    for (let i = 1; i < S; ++i) {
+        qz[i] = qz[i - 1] + gcdmul[i];
+    }
+
+    const res = [];
+    for (let t of queries) {
+        let index = lowerBound(qz, t + 1);
+        res.push(index);
+    }
+
+    return res;
+};
+
+function lowerBound(arr, value) {
+    let low = 1, high = arr.length;
+    while (low < high) {
+        let mid = Math.floor((low + high) / 2);
+        if (arr[mid] < value) low = mid + 1;
+        else high = mid;
+    }
+    return low;
+}
