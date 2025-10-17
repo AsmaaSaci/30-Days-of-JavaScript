@@ -1,0 +1,61 @@
+/**
+ * @param {number[]} coins
+ * @param {number[][]} edges
+ * @return {number}
+ */
+var collectTheCoins = function (coins, edges) {
+  const n = coins.length;
+  const degrees = new Array(n).fill(0);
+  const graph = new Array(n).fill().map(() => []);
+
+  for (const [v1, v2] of edges) {
+    graph[v1].push(v2);
+    graph[v2].push(v1);
+    degrees[v1]++;
+    degrees[v2]++;
+  }
+
+  const withoutCoins = [];
+  for (let v = 0; v < n; v++) {
+    if (degrees[v] === 1 && coins[v] === 0) {
+      withoutCoins.push(v);
+    }
+  }
+  while (withoutCoins.length) {
+    const v = withoutCoins.shift();
+    degrees[v]--;
+    for (const next of graph[v]) {
+      degrees[next]--;
+      if (degrees[next] === 1 && coins[next] === 0) {
+        withoutCoins.push(next);
+      }
+    }
+  }
+
+  const withCoins = [];
+  const parents = [];
+  for (let v = 0; v < n; v++) {
+    if (degrees[v] === 1 && coins[v] === 1) {
+      withCoins.push(v);
+    }
+  }
+  while (withCoins.length) {
+    const v = withCoins.shift();
+    degrees[v]--;
+    for (const next of graph[v]) {
+      degrees[next]--;
+      if (degrees[next] === 1) {
+        parents.push(next);
+      }
+    }
+  }
+
+  for (const parent of parents) {
+    degrees[parent]--;
+    for (const next of graph[parent]) {
+      degrees[next]--;
+    }
+  }
+
+  return degrees.reduce((acc, curr) => acc + Math.max(curr, 0), 0);
+};
