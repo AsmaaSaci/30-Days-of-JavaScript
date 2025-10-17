@@ -1,0 +1,193 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+function subsequencesWithMiddleMode(nums) {
+    const MOD = 1000 * 1000 * 1000 + 7;
+    const n = nums.length;
+
+    // If there are fewer than 5 elements, we can't pick 2 on each side + middle
+    if (n < 5) return 0;
+
+    // Helper function: nC2 mod
+    const takeTwo = (x) => (x < 2) ? 0 : ((x * (x - 1) / 2) % MOD);
+
+    // A small helper to increment or decrement counts in a map
+    // If count goes to zero, we remove the key to keep the map clean.
+    function inc(map, key, delta = 1) {
+        let oldVal = map.get(key) || 0;
+        let newVal = oldVal + delta;
+        if (newVal === 0) {
+            map.delete(key);
+        } else {
+            map.set(key, newVal);
+        }
+    }
+
+    // --------------------------------------------------------------------
+    // Initialize leftCnt with nums[0], nums[1]
+    // and rightCnt with nums[3..n-1]
+    // so the "middle" element at i=2 is not included in either side yet.
+    // --------------------------------------------------------------------
+    let leftCnt = new Map();
+    let rightCnt = new Map();
+
+    let leftCntTotal = 0;
+    let rightCntTotal = 0;
+
+    // Fill leftCnt with [0..1]
+    inc(leftCnt, nums[0]);
+    inc(leftCnt, nums[1]);
+    leftCntTotal = 2;
+
+    // Fill rightCnt with [3..n-1]
+    for (let j = n - 1; j >= 3; j--) {
+        inc(rightCnt, nums[j]);
+        rightCntTotal++;
+    }
+
+    let ans = 0;
+
+    // --------------------------------------------------------------------
+    // Main loop: i in [2..n-3]
+    // --------------------------------------------------------------------
+    // For i=2, we already have leftCnt = [0..1], rightCnt = [3..n-1].
+    // Then after counting, we "slide" to i+1:
+    //  - add nums[i] to leftCnt
+    //  - remove nums[i+1] from rightCnt
+    for (let i = 2; i < n - 2; i++) {
+        // Ensure these keys exist in the map (like your original code's `if (!leftCnt[cur]) leftCnt[cur] = 0;`)
+        const cur = nums[i];
+        if (!leftCnt.has(cur)) leftCnt.set(cur, 0);
+        if (!rightCnt.has(cur)) rightCnt.set(cur, 0);
+
+        // 7-step logic, exactly as in your code:
+        // -----------------------------------
+        // 1) 2 from left[cur], 2 from right[cur], plus the middle
+        // -----------------------------------
+        const leftCur = leftCnt.get(cur) || 0;
+        const rightCur = rightCnt.get(cur) || 0;
+        const all5 = (takeTwo(leftCur) * takeTwo(rightCur)) % MOD;
+        ans = (ans + all5) % MOD;
+
+        // -----------------------------------
+        // 2) 1 other from left + 1 from cur + 2 from right[cur]
+        //    or 1 other from right + 1 from cur + 2 from left[cur]
+        // -----------------------------------
+        let takeOneOther = 0;
+
+        // left side "other"
+        for (let [x, cntX] of leftCnt) {
+            if (x === cur) continue;
+            let tmp = (cntX * leftCur) % MOD;
+            tmp = (tmp * takeTwo(rightCur)) % MOD;
+            takeOneOther = (takeOneOther + tmp) % MOD;
+        }
+        // right side "other"
+        for (let [x, cntX] of rightCnt) {
+            if (x === cur) continue;
+            let tmp = (cntX * rightCur) % MOD;
+            tmp = (tmp * takeTwo(leftCur)) % MOD;
+            takeOneOther = (takeOneOther + tmp) % MOD;
+        }
+        ans = (ans + takeOneOther) % MOD;
+
+        // -----------------------------------
+        // 3) 1 "other" from left + 1 from cur + 1 from right[cur] + 1 from right but not cur
+        // -----------------------------------
+        let takeOneOtherEachSide = 0;
+        for (let [x, cntX] of leftCnt) {
+            if (x === cur) continue;
+            let tmp = (cntX * leftCur) % MOD;
+            tmp = (tmp * rightCur) % MOD;
+            tmp = (tmp * (rightCntTotal - rightCur)) % MOD;
+            takeOneOtherEachSide = (takeOneOtherEachSide + tmp) % MOD;
+        }
+        ans = (ans + takeOneOtherEachSide) % MOD;
+
+        // -----------------------------------
+        // 4) 2 "others" from right side, factoring leftCnt[x] * leftCnt[cur]
+        // -----------------------------------
+        let takeTwoOthersRight = 0;
+        let incorrectRight = 0;
+        // sum up all takeTwo(rightCnt[x]) for x != cur
+        for (let [x, cntX] of rightCnt) {
+            if (x === cur) continue;
+            incorrectRight = (incorrectRight + takeTwo(cntX)) % MOD;
+        }
+        // now for each x in leftCnt with x != cur
+        for (let [x, cntX] of leftCnt) {
+            if (x === cur) continue;
+            let tmp = (cntX * leftCur) % MOD;
+
+            const rx = rightCnt.get(x) || 0;
+            const ttt = takeTwo(rightCntTotal - rightCur - rx);
+            const t1 = (incorrectRight + MOD - takeTwo(rx)) % MOD;
+            const res = (ttt + MOD - t1) % MOD;
+            tmp = (tmp * res) % MOD;
+
+            takeTwoOthersRight = (takeTwoOthersRight + tmp) % MOD;
+        }
+        ans = (ans + takeTwoOthersRight) % MOD;
+
+        // -----------------------------------
+        // 5) 2 "others" from left side, factoring rightCnt[x] * rightCnt[cur]
+        // -----------------------------------
+        let takeTwoOthersLeft = 0;
+        let incorrectLeft = 0;
+        // sum up all takeTwo(leftCnt[x]) for x != cur
+        for (let [x, cntX] of leftCnt) {
+            if (x === cur) continue;
+            incorrectLeft = (incorrectLeft + takeTwo(cntX)) % MOD;
+        }
+        // now for each x in rightCnt with x != cur
+        for (let [x, cntX] of rightCnt) {
+            if (x === cur) continue;
+            let tmp = (cntX * rightCur) % MOD;
+
+            const lx = leftCnt.get(x) || 0;
+            const ttt = takeTwo(leftCntTotal - leftCur - lx);
+            const t1 = (incorrectLeft + MOD - takeTwo(lx)) % MOD;
+            const res = (ttt + MOD - t1) % MOD;
+            tmp = (tmp * res) % MOD;
+
+            takeTwoOthersLeft = (takeTwoOthersLeft + tmp) % MOD;
+        }
+        ans = (ans + takeTwoOthersLeft) % MOD;
+
+        // -----------------------------------
+        // 6) 2 from right side (but not cur) + 2 from leftCnt[cur]
+        // -----------------------------------
+        {
+            let canTakeRight = takeTwo(rightCntTotal - rightCur);
+            canTakeRight = (canTakeRight * takeTwo(leftCur)) % MOD;
+            ans = (ans + canTakeRight) % MOD;
+        }
+
+        // -----------------------------------
+        // 7) 2 from left side (but not cur) + 2 from rightCnt[cur]
+        // -----------------------------------
+        {
+            let canTakeLeft = takeTwo(leftCntTotal - leftCur);
+            canTakeLeft = (canTakeLeft * takeTwo(rightCur)) % MOD;
+            ans = (ans + canTakeLeft) % MOD;
+        }
+
+        // -------------------------------------------------------
+        // After counting for i, we "slide" to i+1:
+        //   - The current middle nums[i] becomes part of the left side
+        //   - The next middle is i+1, so we remove nums[i+1] from right side
+        // -------------------------------------------------------
+        if (i + 1 < n - 2) {
+            // 1) Move nums[i] from "middle" to "left"
+            inc(leftCnt, nums[i], +1);
+            leftCntTotal++;
+
+            // 2) Remove nums[i+1] from the right side
+            inc(rightCnt, nums[i+1], -1);
+            rightCntTotal--;
+        }
+    }
+
+    return ans % MOD;
+}
