@@ -1,0 +1,138 @@
+/**
+ * @param {number[][]} coordinates
+ * @param {number} k
+ * @return {number}
+ */
+var maxPathLength = function(coordinates, k) {
+    const len = coordinates.length, lenM = len - 1
+
+    // sort items and locate the must-have item, 
+    // along with it new index `pivot` in the sorted array
+    const items = coordinates.map((coord, i) => [coord[0], coord[1], i])
+    items.sort((A, B) => A[0] - B[0])
+    const pivot = items.findIndex(A => A[2] === k)
+    const ITEM = items[pivot], WIDTH = ITEM[0], HEIGHT = ITEM[1]
+
+
+    // max items in the longest increasing path to the right, and to the left
+    let outcomeUp = 1, outcomeDown = 1
+    let low, high
+    
+    // we will use the technique in the longest increasing subsequence 
+    // to determine outcomeUp and outcomeDown. the array that is binary-searched 
+    // is `size2last`.
+    low = pivot + 1
+    high = lenM
+    // find earliest high where 
+    // items[high][0] > WIDTH
+    if (items[high][0] > WIDTH) {
+        while (low < high) {
+            const mid = (low + high) >> 1
+            if (items[mid][0] > WIDTH)
+                high = mid
+            else
+                low = mid + 1
+        }
+
+        const size2last = [-Infinity, HEIGHT]
+        const patches = []
+        let prevWidth = WIDTH
+        for (let i = high; i < len; i++) {
+            const item = items[i]
+            const [width, height] = item
+            if (width !== prevWidth) {
+                // apply delayed patches
+                for (const patch of patches) {
+                    const [size, last] = patch
+                    const ext = size2last[size] ?? Infinity
+                    size2last[size] = Math.min(ext, last)
+                }
+                patches.length = 0
+            }
+
+            let low = 0, high = size2last.length - 1
+            // find latest low where
+            // size2last[low] < height
+            while (low < high) {
+                const mid = (1 + low + high) >> 1
+                if (size2last[mid] < height)
+                    low = mid
+                else
+                    high = mid - 1
+            }
+
+            // delay patches until a new width comes or the end is reached
+            if (low !== 0)
+                patches.push([low + 1, height])
+            prevWidth = width
+        }
+
+        for (const patch of patches) {
+            const [size, last] = patch
+            const ext = size2last[size] ?? Infinity
+            size2last[size] = Math.min(ext, last)
+        }
+        
+        outcomeUp = size2last.length - 1
+    }
+
+    low = 0
+    high = pivot - 1
+    // find latest low where 
+    // items[low][0] < WIDTH
+    if (items[low][0] < WIDTH) {
+        while (low < high) {
+            const mid = (1 + low + high) >> 1
+            if (items[mid][0] < WIDTH)
+                low = mid
+            else
+                high = mid - 1
+        }
+
+        const size2last = [Infinity, HEIGHT]
+        const patches = []
+        let prevWidth = WIDTH
+        for (let i = low; i > -1; i--) {
+            const item = items[i]
+            const [width, height] = item
+            if (width !== prevWidth) {
+                // apply delayed patches
+                for (const patch of patches) {
+                    const [size, last] = patch
+                    const ext = size2last[size] ?? -Infinity
+                    size2last[size] = Math.max(ext, last)
+                }
+                patches.length = 0
+            }
+
+            let low = 0, high = size2last.length - 1
+            // find latest low where
+            // size2last[low] > height
+            while (low < high) {
+                const mid = (1 + low + high) >> 1
+                if (size2last[mid] > height)
+                    low = mid
+                else
+                    high = mid - 1
+            }
+
+            // delay patches until a new width comes or the end is reached
+            if (low !== 0)
+                patches.push([low + 1, height])
+            prevWidth = width
+        }
+
+        for (const patch of patches) {
+            const [size, last] = patch
+            const ext = size2last[size] ?? -Infinity
+            size2last[size] = Math.max(ext, last)
+        }
+
+        outcomeDown = size2last.length - 1
+    }
+
+    
+    // remember to subtract 1
+    const result = outcomeUp + outcomeDown - 1
+    return result
+};
