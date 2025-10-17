@@ -1,0 +1,31 @@
+var treeQueries = function(root, queries) {
+    if (!root) return [];
+    
+    let ans = {};
+    let heights = {}
+    
+    function maxHeight(node) {
+        if (!node) return 0;
+        
+        if (heights[node.val]) return heights[node.val];
+        
+        heights[node.val] = 1 + Math.max(maxHeight(node.left), maxHeight(node.right));
+        
+        return heights[node.val];
+    }
+    
+    function dfs(node, depth, maxDepthWithoutCurrentNode) {
+        if (!node) return 0;
+        
+        ans[node.val] = maxDepthWithoutCurrentNode;
+        
+        // depth + height(node.right)
+        // Add current depth + depth of opposite child (since we act as if we remove one of the children)
+        dfs(node.left, depth + 1, Math.max(maxDepthWithoutCurrentNode, depth + maxHeight(node.right)));
+        dfs(node.right, depth + 1, Math.max(maxDepthWithoutCurrentNode, depth + maxHeight(node.left)));
+    }
+    
+    dfs(root, 0, 0);
+    
+    return queries.map(q => ans[q]);
+};
