@@ -1,0 +1,25 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+function maxSubarraySum(nums) {
+  const min2 = (a, b) => (a <= b ? a : b);
+  const max2 = (a, b) => (a >= b ? a : b);
+
+  let ps = nums[0];
+  let largest = nums[0];
+  let low = 0;
+  let low2v = new Map();
+  let low2 = 0;
+
+  for (let i = 1; i < nums.length; i++) {
+    const v = nums[i];
+    low2v.set(v, (low2v.has(v) ? min2(low2v.get(v), low) : low) + v);
+    low2 = min2(low2, low2v.get(v));
+    low = min2(low, ps);
+    ps += nums[i];
+    largest = max2(largest, ps - min2(low, low2));
+  }
+
+  return largest;
+}
