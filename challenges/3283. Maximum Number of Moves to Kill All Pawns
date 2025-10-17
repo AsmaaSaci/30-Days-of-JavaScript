@@ -1,0 +1,89 @@
+/**************************\U0001f60e**************************/
+const maxMoves = (startX, startY, targets) => {
+    let knightPosition = [startX, startY];
+    let positionsList = targets.map(([x, y]) => [x, y]);
+    let numTargets = positionsList.length;
+    let distances = new Map();
+
+    let movePatterns = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+
+    function calculateDistance(from, to) {
+        let sortedFrom = from[0] < to[0] ? from : to;
+        let sortedTo = from[0] < to[0] ? to : from;
+        let key = `${sortedFrom[0]},${sortedFrom[1]}-${sortedTo[0]},${sortedTo[1]}`;
+        
+        if (distances.has(key)) {
+            return distances.get(key);
+        }
+
+        let [startX, startY] = sortedFrom;
+        let [endX, endY] = sortedTo;
+        let grid = Array.from({ length: 50 }, () => Array(50).fill(-1));
+        grid[startX][startY] = 0;
+        let queue = [[startX, startY]];
+        let idx = 0;
+
+        while (idx < queue.length) {
+            let [curX, curY] = queue[idx++];
+            for (let [dx, dy] of movePatterns) {
+                let newX = curX + dx;
+                let newY = curY + dy;
+                if (newX >= 0 && newY >= 0 && newX < 50 && newY < 50 && grid[newX][newY] === -1) {
+                    grid[newX][newY] = grid[curX][curY] + 1;
+                    if (newX === endX && newY === endY) {
+                        distances.set(key, grid[newX][newY]);
+                        return grid[newX][newY];
+                    }
+                    queue.push([newX, newY]);
+                }
+            }
+        }
+        distances.set(key, -1);
+        return -1;
+    }
+
+    let memoAlice = new Map();
+    let memoBob = new Map();
+    let fullMask = (1 << numTargets) - 1;
+
+    function computeAlice(mask, position) {
+        if (mask === 0) return 0;
+        let memoKey = `${mask}-${position}`;
+        if (memoAlice.has(memoKey)) {
+            return memoAlice.get(memoKey);
+        }
+        let bestOutcome = 0;
+        for (let i = 0; i < numTargets; i++) {
+            if (mask & (1 << i)) {
+                let newMask = mask ^ (1 << i);
+                bestOutcome = Math.max(bestOutcome, computeBob(newMask, i) + calculateDistance(positionsList[position], positionsList[i]));
+            }
+        }
+        memoAlice.set(memoKey, bestOutcome);
+        return bestOutcome;
+    }
+
+    function computeBob(mask, position) {
+        if (mask === 0) return 0;
+        let memoKey = `${mask}-${position}`;
+        if (memoBob.has(memoKey)) {
+            return memoBob.get(memoKey);
+        }
+        let bestOutcome = Infinity;
+        for (let i = 0; i < numTargets; i++) {
+            if (mask & (1 << i)) {
+                let newMask = mask ^ (1 << i);
+                bestOutcome = Math.min(bestOutcome, computeAlice(newMask, i) + calculateDistance(positionsList[position], positionsList[i]));
+            }
+        }
+        memoBob.set(memoKey, bestOutcome);
+        return bestOutcome;
+    }
+
+    let result = 0;
+    for (let i = 0; i < numTargets; i++) {
+        let remainingMask = fullMask ^ (1 << i);
+        result = Math.max(result, computeBob(remainingMask, i) + calculateDistance(positionsList[i], knightPosition));
+    }
+    return result;
+};
