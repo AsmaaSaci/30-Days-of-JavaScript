@@ -1,0 +1,79 @@
+/**
+ * @param {string} s
+ * @param {number} numOps
+ * @return {number}
+ */
+var minLength = function (s, numOps) {
+  let check = (target) => {
+    if (target === 1) {
+      console.log(1);
+    }
+    let ref = s;
+    ref = ref.split("");
+    let nee = [];
+    let rem = numOps;
+    let streak = 1;
+    for (let i = 1; i < s.length; i++) {
+      let curr = ref[i];
+      let prev = ref[i - 1];
+      if (curr === prev) {
+        streak++;
+        if (i === s.length - 1) {
+          nee.push(streak);
+        }
+      } else {
+        nee.push(streak);
+        streak = 1;
+        if (i === s.length - 1) {
+            nee.push(streak);
+        }
+      }
+    }
+    for (let n = 0; n < nee.length; n++) {
+      let na = nee[n];
+      if (target === 1 && na % 2 === 0) {
+        nee[n + 1] = (nee[n + 1] || 0) + 1;
+        rem -= Math.ceil((na - target) / (target + 1));
+      } else {
+        if (na > target) {
+          rem -= Math.ceil((na - target) / (target + 1));
+        }
+      }
+      if (rem < 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+  let lo = 1;
+  let hi = s.length;
+  let ans;
+  while (lo <= hi) {
+    let mid = Math.floor((lo + hi) / 2);
+    if (check(mid)) {
+      hi = mid - 1;
+      ans = mid;
+    } else {
+      lo = mid + 1;
+    }
+  }
+  s = s.split("");
+  s[0] = String(Number(!Number(s[0])));
+  s = s.join("");
+  numOps--;
+  lo = 1;
+  hi = s.length;
+  let ans1 = Infinity;
+  if (numOps >= 0) {
+    while (lo <= hi) {
+      let mid = Math.floor((lo + hi) / 2);
+      if (check(mid)) {
+        hi = mid - 1;
+        ans1 = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+  }
+  return Math.min(ans, ans1);
+};
