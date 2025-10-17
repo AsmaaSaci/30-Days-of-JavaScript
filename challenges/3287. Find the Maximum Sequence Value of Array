@@ -1,0 +1,61 @@
+/**************************\U0001f60e**************************/
+function maxValue(nums, k) {
+    const n = nums.length;
+    if (2 * k > n) return 0;
+
+    const leftPossible = Array.from({ length: k + 1 }, () => new Set());
+    leftPossible[0].add(0);
+    const leftMaxOrList = Array.from({ length: n }, () => new Set());
+
+    for (let i = 0; i < n; i++) {
+        const num = nums[i];
+        for (let j = k; j > 0; j--) {
+            for (const orVal of leftPossible[j - 1]) {
+                leftPossible[j].add(orVal | num);
+            }
+        }
+        if (k <= i + 1) {
+            leftMaxOrList[i] = new Set(leftPossible[k]);
+        }
+    }
+
+    const rightPossible = Array.from({ length: k + 1 }, () => new Set());
+    rightPossible[0].add(0);
+    const rightMaxOrList = Array.from({ length: n }, () => new Set());
+
+    for (let i = n - 1; i >= 0; i--) {
+        const num = nums[i];
+        for (let j = k; j > 0; j--) {
+            for (const orVal of rightPossible[j - 1]) {
+                rightPossible[j].add(orVal | num);
+            }
+        }
+        if (k <= n - i) {
+            rightMaxOrList[i] = new Set(rightPossible[k]);
+        }
+    }
+
+    let maxVal = 0;
+    for (let i = 0; i < n - 1; i++) {
+        if (i < k - 1 || (n - (i + 1)) < k) continue;
+        const leftSet = leftMaxOrList[i];
+        const rightSet = rightMaxOrList[i + 1];
+        if (leftSet.size === 0 || rightSet.size === 0) continue;
+
+        if (leftSet.size < rightSet.size) {
+            for (const or1 of leftSet) {
+                for (const or2 of rightSet) {
+                    maxVal = Math.max(maxVal, or1 ^ or2);
+                }
+            }
+        } else {
+            for (const or2 of rightSet) {
+                for (const or1 of leftSet) {
+                    maxVal = Math.max(maxVal, or1 ^ or2);
+                }
+            }
+        }
+    }
+
+    return maxVal;
+}
