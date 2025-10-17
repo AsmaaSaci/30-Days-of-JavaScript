@@ -1,0 +1,86 @@
+const MOD = 1000000007n;
+
+class Fenwick {
+    constructor(n) {
+        this.a = new Array(n + 1).fill(0n);
+    }
+
+    sum(i) {
+        let s = 0n;
+
+        while (i > 0) {
+            s += this.a[i];
+            i -= i & -i;
+        }
+
+        return s;
+    }
+
+    add(i, x) {
+        while (i < this.a.length) {
+            this.a[i] = (this.a[i] + x) % MOD;
+            i += i & -i;
+        }
+    }
+}
+
+function totalBeauty(A) {
+    const M = Math.max(...A) + 1;
+    const locs = new Map();
+
+    for (let i = 0; i < A.length; i++) {
+        const x = A[i];
+        if (!locs.has(x)) locs.set(x, []);
+        locs.get(x).push(i);
+    }
+
+    const F = new Array(M).fill(0n);
+
+    for (let d = 1; d < M; d++) {
+        const indices = [];
+
+        for (let v = d; v < M; v += d) {
+            if (locs.has(v)) indices.push(...locs.get(v));
+        }
+
+        indices.sort((a, b) => a - b);
+
+        if (indices.length <= 1) {
+            F[d] = BigInt(indices.length);
+            continue;
+        }
+
+        const rank = new Map();
+
+        indices.forEach((pos, idx) => {
+            rank.set(pos, idx + 1);
+        });
+
+        const fen = new Fenwick(indices.length);
+
+        for (let v = d; v < M; v += d) {
+            if (!locs.has(v)) continue;
+
+            for (let pos of locs.get(v).slice().reverse()) {
+                const r = rank.get(pos);
+                const addend = 1n + fen.sum(r - 1);
+                F[d] = (F[d] + addend) % MOD;
+                fen.add(r, addend);
+            }
+        }
+    }
+
+    for (let d = M - 1; d > 0; d--) {
+        for (let e = d * 2; e < M; e += d) {
+            F[d] = (F[d] - F[e] + MOD) % MOD;
+        }
+    }
+
+    let ans = 0n;
+
+    for (let d = 1; d < M; d++) {
+        ans = (ans + BigInt(d) * F[d]) % MOD;
+    }
+
+    return Number(ans);
+}
