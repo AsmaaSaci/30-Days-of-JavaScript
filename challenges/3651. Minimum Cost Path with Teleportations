@@ -1,0 +1,50 @@
+var minCost = function(grid, k) {
+    const m = grid.length;
+    const n = grid[0].length;
+    // sort all cells to traverse them from smallest to biggest
+    const all_cells = [];
+    for (let r = 0; r < m; r++) {
+        for (let c = 0; c < n; c++) {
+            all_cells.push([r, c, grid[r][c]]);
+        }
+    }
+    all_cells.sort((a, b) => a[2] - b[2]);
+    // maintain 2 states: current and previous to reduce space complexity
+    // O(m * n) instead of O(m * n * k)
+    let dp = new Array(m);
+    let _dp = new Array(m);
+    for (let r = 0; r < m; r++) {
+        dp[r] = new Array(n).fill(Infinity);
+        _dp[r] = new Array(n).fill(Infinity);
+    }
+    dp[m - 1][n - 1] = _dp[m - 1][n - 1] = 0;
+    // maintain the minimum cost for every possible cell's value
+    const min_vals = {};
+    for (let i = 0; i <= k; i++) {
+        // usual DP part: update top and left values based on current value
+        for (let r = m - 1; r >= 0; r--) {
+            for (let c = n - 1; c >= 0; c--) {
+                if (r > 0)
+                    _dp[r - 1][c] = Math.min(_dp[r - 1][c], _dp[r][c] + grid[r][c]);
+                if (c > 0)
+                    _dp[r][c - 1] = Math.min(_dp[r][c - 1], _dp[r][c] + grid[r][c]);
+                const num = grid[r][c];
+                if (min_vals[num] === undefined || min_vals[num] > _dp[r][c])
+                    min_vals[num] = _dp[r][c];
+            }
+        }
+        [dp, _dp] = [_dp, dp];
+        // main magic here: update values by using "Teleportation"
+        // instead of iterating all cells and comparing with the current cell,
+        // we iterate from the smallest to the biggest and maintain the minimum cose
+        // base on previous seen cells (smallest) and current cell value
+        // + the minimum from min_vals for the current value (to handle duplicates)
+        let min_cost = Infinity;
+        for (let i = 0; i < all_cells.length; i++) {
+            const [row, col, cost] = all_cells[i];
+            min_cost = Math.min(min_cost, min_vals[cost]);
+            _dp[row][col] = min_cost;
+        }
+    }
+    return dp[0][0];
+};
