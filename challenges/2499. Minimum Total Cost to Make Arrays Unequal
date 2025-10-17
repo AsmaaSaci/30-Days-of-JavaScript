@@ -1,0 +1,31 @@
+var minimumTotalCost = function(nums1, nums2) {
+  const counts = new Map();
+  let totalCost = 0;
+  let totalMatch = 0;
+  
+  for (let i = 0; i < nums1.length; i += 1) {
+    if (nums1[i] !== nums2[i]) continue;
+    counts.set(nums1[i], (counts.get(nums1[i]) || 0) + 1);
+    totalMatch += 1;
+    totalCost += i;
+  }
+  
+  const [maxElement, maxCount] = [...counts.entries()].reduce((max, entry) => entry[1] > max[1] ? entry : max, [0, 0]);
+  
+  // if additional > 0, maxElement accounts for more than half the matched elements and is a majority
+  let additional = Math.max(0, maxCount - (totalMatch - maxCount));
+  
+  for (let i = 0; i < nums1.length; i += 1) {
+    if (additional === 0) break;
+    if (
+      nums1[i] === nums2[i]
+      || nums1[i] === maxElement
+      || nums2[i] === maxElement
+    ) continue;
+    
+    totalCost += i; 
+    additional -= 1;
+  }
+  
+  return additional === 0 ? totalCost : -1;
+};
