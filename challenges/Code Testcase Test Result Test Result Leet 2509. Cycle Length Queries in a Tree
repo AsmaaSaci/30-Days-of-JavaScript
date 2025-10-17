@@ -1,0 +1,32 @@
+/**
+ * @param {number} n
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var cycleLengthQueries = function(n, queries) {
+    return queries.map(query => {
+        const [a, b] = query
+        let countA = 0, countB = 0
+        for (let p = a; p !== 1; p >>= 1)
+            countA++
+        for (let q = b; q !== 1; q >>= 1)
+            countB++
+        
+        let p = a, q = b
+        const diff = Math.abs(countA - countB)
+        if (countA > countB) {
+            for (let i = 0; i < diff; i++)
+                p >>= 1
+        } else {
+            for (let i = 0; i < diff; i++)
+                q >>= 1
+        }
+
+        let common = 0
+        for (; p !== q; p >>= 1, q >>= 1) {
+            common++
+        }
+
+        return diff + 1 + 2 * common
+    })
+};
