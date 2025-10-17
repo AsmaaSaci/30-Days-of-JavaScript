@@ -1,0 +1,53 @@
+var maxPower = function(stations_, r, k) {
+    // Returns 0 if the goal is acheivable, 1 if not.
+    // The answer is the goal which returned the last zero
+    // This is best calculated with binary search
+    function check(goal) {
+        let additions = 0;
+        let stations = [...stations_]; // mutable clone of the stations
+        let [i, j] = [-r, r]; // the current window
+        let currPower = _.sum(stations.slice(0, j + 1)); // sum within the current window
+        for (const station of stations) {
+            if (currPower < goal) {
+                // we need to add power stations at k + r
+                // we also need to update currPower and additions
+                const delta = goal - currPower;
+                additions += delta
+                currPower += delta
+                stations[Math.min(j, stations.length - 1)] += delta;
+            }
+            // keep track of the rolling sum
+            j++
+            currPower += ( stations[j] || 0)
+            currPower -= ( stations[i] || 0)
+            i++
+        }
+        return additions <= k ? 0 : 1;
+    }
+    
+    // binary search to find last achievable goal
+    const max = _.sum(stations_) + k;
+    return lastIndexLessThan(1, 0, max, check);
+};
+
+// Handy Reusable Binary Search Function
+function lastIndexLessThan(val, a, b, f = (i) => i) {
+    if (a > b) return null;
+    if (f(a) >= val) return null;
+    if (f(b) < val) return b;
+    
+    while (a <= b) {
+        const mid = Math.floor(a / 2 + b / 2);
+        if (f(mid) < val) {
+            a = mid + 1;
+            if (f(a) >= val) {
+                return mid;
+            }
+        } else {
+            b = mid - 1;
+            if (f(b) < val) {
+                return b;
+            }
+        }
+    }
+}
