@@ -1,0 +1,54 @@
+/**
+ * @param {number[][]} intervals
+ * @return {number[]}
+ */
+var maximumWeight = function (intervals) {
+    intervals = intervals.map((item, ind) => [...item, ind]).sort((a, b) => {
+        if (a[0] == b[0]) return a[1] - b[1]
+        return a[0] - b[0]
+    })
+    const bin = (target) => {
+        let l = 0
+        let r = intervals.length - 1
+        let res = -1
+        while (l <= r) {
+            const mid = Math.floor((l + r) / 2)
+            if (intervals[mid][0] > target) {
+                res = mid
+                r = mid - 1
+            } else {
+                l = mid + 1
+            }
+        }
+        return res
+    }
+    const memo = new Array(intervals.length).fill(0).map(() => new Array(4).fill(null))
+    const rec = (curr, cnt) => {
+        if (cnt == 4 || curr >= intervals.length || curr == -1) return [0, [], Infinity]
+        if(memo[curr][cnt] != null) return memo[curr][cnt]
+        const [l, r, w, ind] = intervals[curr]
+        // skip
+        const skip = rec(curr + 1, cnt)
+        const skipScore = skip[0]
+        const skipMinInd = skip[2]
+        // take
+        const nextClosest = bin(r)
+        const take = rec(nextClosest, cnt + 1)
+        const takeScore = take[0] + w
+        const takeInds = [...take[1], ind]
+        const takeMinInd = Math.min(ind, take[2])
+
+        if(skipScore > takeScore) {
+            return memo[curr][cnt] = skip
+        }
+        if(skipScore < takeScore) {
+            return memo[curr][cnt] = [takeScore, takeInds, takeMinInd]
+        }
+        if (takeMinInd <= skipMinInd) {
+            return memo[curr][cnt] = [takeScore, takeInds, takeMinInd]
+        }
+        return memo[curr][cnt] = skip
+    }
+    const res = rec(0, 0)[1]
+    return res.sort((a,b) => a-b)
+};
