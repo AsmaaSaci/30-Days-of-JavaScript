@@ -1,0 +1,37 @@
+const findCrossingTime = (n, k, time) => {
+    let collect = new MinPriorityQueue({ compare: (x, y) => x.startTime - y.startTime });
+    let waiting = new MinPriorityQueue({
+        compare: (x, y) => {
+            if (x.endTime != y.endTime) return y.endTime - x.endTime;
+            if (x.LR + x.RL != y.LR + y.RL) return (y.LR + y.RL) - (x.LR + x.RL);
+            if (x.idx != y.idx) return y.idx - x.idx;
+        }
+    });
+    for (let i = 0; i < time.length; i++) {
+        let item = { startTime: 0, endTime: 0, idx: i, LR: time[i][0], pickOld: time[i][1], RL: time[i][2], putNew: time[i][3] };
+        collect.enqueue(item)
+    }
+    let clock = 0, np = n;
+    while (1) {
+        if (waiting.size() == 0 && collect.front().startTime > clock) clock = collect.front().startTime;
+        while (collect.size() && collect.front().startTime <= clock) waiting.enqueue(collect.dequeue());
+        let cur = waiting.dequeue();
+        if (cur.endTime != 0 || np != 0) {
+            let nextClock = 0;
+            if (cur.endTime == 0) {
+                np--;
+                cur.endTime = 1;
+                nextClock = clock + cur.LR;
+                cur.startTime = clock + cur.LR + cur.pickOld;
+            } else {
+                if (--n == 0) return clock + cur.RL;
+                cur.endTime = 0;
+                nextClock = clock + cur.RL;
+                cur.startTime = clock + cur.RL + cur.putNew;
+            }
+            clock = nextClock;
+            collect.enqueue(cur);
+        }
+    }
+    return res;
+};
