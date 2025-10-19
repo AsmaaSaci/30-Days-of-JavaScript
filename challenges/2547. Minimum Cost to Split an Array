@@ -1,0 +1,47 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var minCost = function(nums, k) {
+    const len = nums.length
+
+    // fromI => outcome
+    const memo = new Array(len)
+    // dp function based on memo
+    function dp(fromI) {
+        if (fromI === len)  return 0
+
+        const ext = memo[fromI]
+        if (ext !== undefined)  return ext
+        
+        let result = Infinity
+        const val2freq = new Map()
+        let importanceSF = k
+        for (let j = fromI; j < len; j++) {
+            const val = nums[j]
+            const freq = val2freq.get(val) ?? 0
+            // when val is encountered for the 1st time, we do nohting;
+            // when val is encountered for the 2nd time, we let it along
+            // with its first occurence contribute to importanceSF;
+            // for the subsequent occurences, we only increase 
+            // importanceSF by 1 for each time
+            if (freq === 1) {
+                importanceSF += 2
+            } else if (freq > 1) {
+                importanceSF++
+            }
+            val2freq.set(val, 1 + freq)
+
+            const subresult = dp(1 + j)
+            const outcome = importanceSF + subresult
+            result = Math.min(result, outcome)
+        }
+
+        return memo[fromI] = result
+    }
+
+
+    const result = dp(0)
+    return result
+};
