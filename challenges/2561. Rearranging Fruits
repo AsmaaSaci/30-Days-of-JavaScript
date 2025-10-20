@@ -1,0 +1,54 @@
+ 
+var minCost = function(basket1, basket2) {
+    const count1 = {};
+    const count2 = {};
+    const totalCount = {};
+
+    // Count fruits in both baskets
+    for (let fruit of basket1) {
+        count1[fruit] = (count1[fruit] || 0) + 1;
+        totalCount[fruit] = (totalCount[fruit] || 0) + 1;
+    }
+    for (let fruit of basket2) {
+        count2[fruit] = (count2[fruit] || 0) + 1;
+        totalCount[fruit] = (totalCount[fruit] || 0) + 1;
+    }
+
+    // Check for odd counts
+    for (let fruit in totalCount) {
+        if (totalCount[fruit] % 2 !== 0) {
+            return -1; // Impossible to balance
+        }
+    }
+
+    // Get all unique fruit costs
+    const allFruits = Object.keys(totalCount).map(Number);
+
+    // Get the minimum cost fruit for potential indirect swaps
+    const globalMin = Math.min(...allFruits);
+
+    // Find unbalanced elements to be swapped
+    const merge = [];
+    for (let fruit of allFruits) {
+        const c1 = count1[fruit] || 0;
+        const c2 = count2[fruit] || 0;
+
+        const diff = Math.abs(c1 - c2);
+        if (diff > 0) {
+            const moves = diff / 2;
+            for (let i = 0; i < moves; i++) {
+                merge.push(Number(fruit));
+            }
+        }
+    }
+
+    // Only need to process half of merge
+    merge.sort((a, b) => a - b);
+
+    let cost = 0;
+    for (let i = 0; i < merge.length / 2; i++) {
+        cost += Math.min(merge[i], 2 * globalMin);
+    }
+
+    return cost;
+};
