@@ -1,0 +1,66 @@
+/**
+* @param {number} n
+* @param {number} p
+* @param {number[]} banned
+* @param {number} k
+* @return {number[]}
+*/
+function minReverseOperations(n, p, banned, k) {
+			const ans = Array(n).fill(-1);
+
+			for (const b of banned) {
+				ans[b] = -2;
+			}
+
+			let queue = [p];
+			ans[p] = 0;
+			--k;
+
+			do {
+				let excludeFrom = -1, excludeTo = -1;
+
+				const distance = ans[queue[0]] + 1;
+				const newQueue = [];
+
+				for (const q of queue) {
+					let start = q - k;
+					let end = q + k;
+
+					if (start < 0) {
+						start = k - q;
+					}
+
+					if (end >= n) {
+						end = 2 * (n - 1) - q - k;
+					}
+
+					for (let i = start; i <= end; i += 2) {
+						if (i >= excludeFrom && i <= excludeTo) {
+							i = excludeTo;
+							continue;
+						}
+
+						if (ans[i] === -1) {
+							ans[i] = distance;
+							newQueue.push(i);
+						}
+					}
+
+					if (!(excludeTo < start || excludeFrom > end)) {
+						excludeFrom = start < excludeFrom ? start : excludeFrom;
+						excludeTo = end > excludeTo ? end : excludeTo;
+					} else {
+						excludeFrom = start;
+						excludeTo = end;
+					}
+				}
+
+				queue = newQueue.sort((a, b) => a - b);
+			} while (queue.length)
+
+			for (let i = 0; i < n; ++i) {
+				ans[i] = ans[i] < -1 ? -1 : ans[i];
+			}
+
+			return ans;
+		}
