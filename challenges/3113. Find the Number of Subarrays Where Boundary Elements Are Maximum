@@ -1,0 +1,34 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var numberOfSubarrays = function(nums) {
+    let result = 0
+
+
+    // val, freq
+    // use Infinity to ensure the stack will never be empty
+    const stack = [[Infinity, 1]]
+    for (const val of nums) {
+        // count the trivial subarray
+        result++
+
+        // pop the smaller elements
+        while (stack.at(-1)[0] < val) {
+            stack.pop()
+        }
+
+        const top = stack.at(-1)
+        const [topVal, topFreq] = top
+        if (topVal !== val) {
+            stack.push([val, 1])
+        } else {
+            // non-trivial subarray(s) found!
+            result += top[1]
+            top[1]++
+        }
+    }
+
+
+    return result
+};
