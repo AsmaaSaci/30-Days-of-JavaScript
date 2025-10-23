@@ -1,0 +1,31 @@
+function findPermutation(nums) {
+    const n = nums.length, inf = Infinity, cache = new Map(), path = new Map();
+
+    function dp(indMap, prev) {
+        if (indMap === (1 << n) - 1) return Math.abs(prev - nums[0]);
+        const key = `${indMap},${prev}`;
+        if (cache.has(key)) return cache.get(key);
+
+        let minScore = inf, minNum = -1;
+        for (let i = 0; i < n; i++) {
+            if ((indMap & (1 << i)) === 0) {
+                const score = dp(indMap | (1 << i), i) + Math.abs(prev - nums[i]);
+                if (score < minScore) minScore = score, minNum = i;
+            }
+        }
+
+        path.set(key, [minNum, ...(path.get(`${indMap | (1 << minNum)},${minNum}`) || [])]);
+        return cache.set(key, minScore).get(key);
+    }
+
+    dp(1, 0);
+    let result = [0], indMap = 1, prev = 0;
+    for (let i = 0; i < n - 1; i++) {
+        const nextNum = path.get(`${indMap},${prev}`)[0];
+        result.push(nextNum);
+        indMap |= (1 << nextNum);
+        prev = nextNum;
+    }
+
+    return result;
+}
