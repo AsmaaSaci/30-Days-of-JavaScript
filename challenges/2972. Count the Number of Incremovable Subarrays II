@@ -1,0 +1,25 @@
+function incremovableSubarrayCount(nums: number[]): number {
+    const n = nums.length;
+    let i = 0;
+
+    // Find the longest increasing subarray from the start
+    while (i + 1 < n && nums[i] < nums[i + 1]) i++;
+
+    // If the entire array is increasing, return the total number of subarrays
+    if (i === n - 1) return (n * (n + 1)) / 2;
+
+    let res = i + 2;
+
+    // Iterate from the end of the array
+    for (let j = n - 1; j >= 0; j--) {
+        // Break if the current element is not part of an increasing subarray
+        if (j < n - 1 && nums[j] >= nums[j + 1]) break;
+
+        // Adjust i to maintain the condition
+        while (i >= 0 && nums[i] >= nums[j]) i--;
+
+        res += i + 2;
+    }
+
+    return res;
+};
