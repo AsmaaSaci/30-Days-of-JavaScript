@@ -1,0 +1,22 @@
+var maximumPoints = function(edges, coins, k) {
+  let n = edges.length + 1, graph = Array(n).fill(0).map(() => []);
+  for (let [a, b] of edges) {
+    graph[a].push(b);
+    graph[b].push(a);
+  }
+  let memo = Array(n).fill(0).map(() => Array(15).fill(null));
+  return dp(0, 0, -1);
+  
+  function dp(node, reductions, parent) { // maximum number of coins collected with root being `node` 
+    if (memo[node][reductions] !== null) return memo[node][reductions];
+    
+    let nodeValue = coins[node] >> reductions;
+    let option1 = nodeValue - k, option2 = Math.floor(nodeValue / 2);
+    for (let child of graph[node]) {
+      if (child === parent) continue;
+      option1 += dp(child, reductions, node);
+      option2 += dp(child, Math.min(14, reductions + 1), node);
+    }
+    return memo[node][reductions] = Math.max(option1, option2);
+  }
+};
