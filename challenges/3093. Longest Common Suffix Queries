@@ -1,0 +1,56 @@
+/**
+ * @param {string[]} wordsContainer
+ * @param {string[]} wordsQuery
+ * @return {number[]}
+ */
+var stringIndices = function(wordsContainer, wordsQuery) {
+    // root of (suffix) trie
+    const root = { }
+    // for each node, the properties size and idx: 
+    // size: length of the best word that reaches here
+    // idx: index in wordsContainer of the best word that reaches here
+
+    // bestWord, bestIdx: for root node
+    let bestSize = Infinity, bestIdx = -1
+    for (const [i, word] of wordsContainer.entries()) {
+        const size = word.length
+        if (size < bestSize) {
+            bestSize = size
+            bestIdx = i
+        }
+
+        let node = root
+        for (let j = size - 1; j > -1; j--) {
+            const ch = word[j]
+            const ext = node[ch]
+            if (!ext) {
+                // create the node node
+                node = node[ch] = { size, idx: i }
+            } else {
+                // override the existing info with a better word
+                if (size < ext.size) {
+                    ext.size = size
+                    ext.idx = i
+                }
+
+                node = ext
+            }
+        }
+    }
+    root.size = bestSize
+    root.idx = bestIdx
+
+
+    return wordsQuery.map(query => {
+        let node = root
+        for (let i = query.length - 1; i > -1; i--) {
+            const ch = query[i]
+            const next = node[ch]
+            if (!next)  break
+
+            node = next
+        }
+
+        return node.idx
+    })
+};
