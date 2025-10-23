@@ -1,0 +1,126 @@
+/**
+ * @param {string} target
+ * @param {string[]} words
+ * @param {number[]} costs
+ * @return {number}
+ */
+var minimumCost = function(target, words, costs) {
+    const len = target.length, size = words.size
+    const aCode = 97, SIZE = 26, SIZEP = 1 + SIZE
+    const targetLts = new Array(len)
+    const hashFL = new Array(len)
+    hashFL[-1] = 0
+    for (let i = 0; i < len; i++) {
+        const lt = target.charCodeAt(i) - aCode
+        const LT = lt ** 2
+        targetLts[i] = lt
+        hashFL[i] = LT + hashFL[i - 1]
+    }
+        
+
+    // word to minimum cost
+    const word2cost = new Map()
+    // index to minimum cost, with the help of word2cost
+    const idx2cost = new Array(size)
+    for (const [i, word] of words.entries()) {
+        const extCost = word2cost.get(word) ?? Infinity
+        word2cost.set(word, Math.min(extCost, costs[i]))
+    }
+
+    const root = new Array(SIZEP)
+    const UB = 224
+    const bigs = []
+    const seen = new Set()
+    // build trie (with words whose lengths < UB)
+    for (const [i, word] of words.entries()) {
+        if (seen.has(word)) continue
+        seen.add(word)
+
+        const wordLen = word.length
+        const cost = word2cost.get(word)
+        idx2cost[i] = cost
+
+        if (wordLen >= UB) {
+            // for long words, use rolling hash to resolve
+            // word, idx, hash
+            bigs.push([word, i, null])
+            continue
+        }
+
+        let node = root
+        for (let i = 0; i < wordLen; i++) {
+            const lt = word.charCodeAt(i) - aCode
+            const nodeLt = node[lt]
+            if (nodeLt === undefined)
+                node = node[lt] = new Array(SIZEP)
+            else
+                node = nodeLt
+        }
+        node[SIZE] = i
+    }
+
+    // get hashes for long words
+    bigs.sort((A, B) => A[0].length - B[0].length)
+    for (const big of bigs) {
+        const word = big[0]
+        const wordLen = word.length
+
+        let hashSF = 0
+        for (let i = 0; i < wordLen; i++) {
+            const lt = word.charCodeAt(i) - aCode
+            const LT = lt ** 2
+            hashSF += LT
+        }
+
+        big[2] = hashSF
+    }
+
+    
+    // fromI => outcome
+    const memo = new Array(len)
+    function dp(fromI) {
+        if (fromI === len)  return 0
+
+        const ext = memo[fromI]
+        if (ext !== undefined)  return ext
+
+        let result = Infinity
+        let node = root
+        // go through trie
+        for (let j = fromI; j < len; j++) {
+            const lt = targetLts[j]
+            const nodeLt = node[lt]
+            if (!nodeLt)    break
+            node = nodeLt
+
+            const idx = node[SIZE]
+            if (idx !== undefined) {
+                result = Math.min(result, idx2cost[idx] + dp(1 + j))
+            }
+        }
+
+        // go through hashes of bigs
+        for (const big of bigs) {
+            const [word, idx, hash] = big
+            const wordLen = word.length
+            const nextI = fromI + wordLen
+            if (nextI > len)    break
+
+            const hereHash = hashFL[nextI - 1] - hashFL[fromI - 1]
+            if (hereHash === hash && target.slice(fromI, nextI) === word) {
+                const subresult = dp(nextI)
+                const outcome = idx2cost[idx] + subresult
+                result = Math.min(result, outcome)
+            }
+        }
+
+        return memo[fromI] = result
+    }
+
+
+    let result = dp(0)
+    if (result === Infinity)    result = -1
+
+    
+    return result
+};
