@@ -1,0 +1,102 @@
+/**
+ * @param {number[][]} board
+ * @return {number}
+ */
+var maximumValueSum = function(board) {
+    let n = board.length
+    let m = board[0].length
+    let result = board[0][0] + board[1][1] + board[2][2]
+    
+    // create matrix with max number in that direction
+    let maxNumInLeftUp = getMaxNumFromDirection(board, 1, 1)
+    let maxNumInRightUp = getMaxNumFromDirection(board, 1, -1)
+    let maxNumInLeftDown = getMaxNumFromDirection(board, -1, 1)
+    let maxNumInRightDown = getMaxNumFromDirection(board, -1, -1)
+    
+    // get result for variant where Rooks place diagonal relative to central Rook
+    for (let i = 1; i < n - 1; i++)
+        for (let j = 1; j < m - 1; j++)
+            result = Math.max(result,
+                board[i][j] + maxNumInLeftUp[i - 1][j - 1] + maxNumInRightDown[i + 1][j + 1],
+                board[i][j] + maxNumInRightUp[i - 1][j + 1] + maxNumInLeftDown[i + 1][j - 1])
+    
+    
+    // create matrix with maximum number in that row from left and right
+    let maxNumInLeft = new Array(n).fill(0).map((item) => new Array(m))
+    for (let i = 0; i < n; i++) {
+        maxNumInLeft[i][0] = board[i][0]
+        for (let j = 1; j < m; j++)
+            maxNumInLeft[i][j] = Math.max(maxNumInLeft[i][j - 1], board[i][j])
+    }
+    let maxNumInRight = new Array(n).fill(0).map((item) => new Array(m))
+    for (let i = 0; i < n; i++) {
+        maxNumInRight[i][m - 1] = board[i][m - 1]
+        for (let j = m - 2; j >= 0; j--)
+            maxNumInRight[i][j] = Math.max(maxNumInRight[i][j + 1], board[i][j])
+    }
+    
+    // get result for variant where Rooks place above right and left relative to central Rook
+    for (let j = 1; j < m - 1; j++) {
+        let maxSumUp = maxNumInLeft[0][j - 1] + maxNumInRight[1][j + 1]
+        for (let i = 2; i < n; i++) {
+                maxSumUp = Math.max(maxSumUp,
+                    maxNumInLeft[i - 1][j - 1] + maxNumInRightUp[i - 2][j + 1],
+                    maxNumInRight[i - 1][j + 1] + maxNumInLeftUp[i - 2][j - 1])
+                result = Math.max(result, board[i][j] + maxSumUp)
+            }
+        }
+    
+    // get result for variant where Rooks place below right and left relative to central Rook
+    for (let j = 1; j < m - 1; j++) {
+        let maxSumDown = maxNumInLeft[n - 1][j - 1] + maxNumInRight[n - 2][j + 1]
+        for (let i = n - 3; i >= 0; i--) {
+                maxSumDown = Math.max(maxSumDown,
+                    maxNumInLeft[i + 1][j - 1] + maxNumInRightDown[i + 2][j + 1],
+                    maxNumInRight[i + 1][j + 1] + maxNumInLeftDown[i + 2][j - 1])
+                result = Math.max(result, board[i][j] + maxSumDown)
+            }
+        }
+    
+    return result
+};
+
+function getMaxNumFromDirection(array, directionVertical, directionHorizontal) {
+    let n = array.length
+    let m = array[0].length
+    let result = new Array(n).fill(0).map((item) => new Array(m))
+
+    let rowStart, rowEnd, rowStep,
+        colStart, colEnd, colStep
+    
+    if (directionVertical == 1) {
+        rowStart = 0
+        rowEnd = n - 1
+        rowStep = 1
+    } else {
+        rowStart = n - 1
+        rowEnd = 0
+        rowStep = -1
+    }
+
+    if (directionHorizontal == 1) {
+        colStart = 0
+        colEnd = m - 1
+        colStep = 1
+    } else {
+        colStart = m - 1
+        colEnd = 0
+        colStep = -1
+    }
+
+    result[rowStart][colStart] = array[rowStart][colStart]
+
+    for (let i = rowStart + rowStep; i != rowEnd; i = i + rowStep)
+        result[i][colStart] = Math.max(result[i - rowStep][colStart], array[i][colStart])
+    for (let j = colStart + colStep; j != colEnd; j = j + colStep)
+        result[rowStart][j] = Math.max(result[rowStart][j - colStep], array[rowStart][j])
+    for (let i = rowStart + rowStep; i != rowEnd; i = i + rowStep)
+        for (let j = colStart + colStep; j != colEnd; j = j + colStep)
+            result[i][j] = Math.max(result[i - rowStep][j], result[i][j - colStep], array[i][j])
+    
+    return result
+}
