@@ -1,0 +1,60 @@
+/**
+ * @param {string[]} words
+ * @param {number} k
+ * @return {number[]}
+ */
+var longestCommonPrefix = function(words, k) {
+    const n = words.length;
+    if (n <= k) return new Array(n).fill(0);
+
+    const trie = { children: {}, max: -1, size: 0 };
+    const changed_nodes = new Set();
+
+    const addWord = (idx) => {
+        const word = words[idx];
+        let pointer = trie;
+        for (const char of word) {
+            if (!pointer.children[char])
+                pointer.children[char] = { children: {}, max: -1, size: 0 };
+            pointer.size++;
+            pointer = pointer.children[char];
+        }
+        pointer.size++;
+    };
+    const rmWord = (idx) => {
+        const word = words[idx];
+        let pointer = trie;
+        for (const char of word) {
+            changed_nodes.add(pointer);
+            pointer.size--;
+            pointer = pointer.children[char];
+        }
+        changed_nodes.add(pointer);
+        pointer.size--;
+    };
+
+    for (let i = 0; i < n; i++)
+        addWord(i);
+    
+    const getMax = (node) => {
+        if (node.size < k) return 0;
+        if (!changed_nodes.has(node) && node.max !== -1)
+            return node.max;
+        let max = 0;
+        for (let char in node.children)
+            max = Math.max(max, getMax(node.children[char]));
+        if (!changed_nodes.has(node))
+            node.max = max + 1;
+        return max + 1;
+    };
+
+    const res = new Array(n);
+    for (let i = 0; i < n; i++) {
+        changed_nodes.clear();
+        rmWord(i);
+        res[i] = getMax(trie) - 1; // -1 because of empty root node
+        addWord(i);
+    }
+
+    return res;
+};
