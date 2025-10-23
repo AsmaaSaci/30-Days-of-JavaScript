@@ -1,0 +1,122 @@
+/**
+ * @param {number[]} nums
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var countOfPeaks = function (nums, queries) {
+  const n = nums.length;
+  const peaks = new Array(n).fill(0);
+  for (let i = 1; i < n - 1; i++) {
+    if (nums[i] > nums[i - 1] && nums[i] > nums[i + 1]) {
+      peaks[i] = 1;
+    }
+  }
+  const segmentTree = new SegmentTree(n);
+  segmentTree.build(0, 0, n - 1, peaks);
+
+  const ans = [];
+  for (const q of queries) {
+    if (q[0] === 1) {
+      const [_, left, right] = q;
+      if (left === right) {
+        ans.push(0);
+      } else {
+        let count = 0;
+        if (peaks[left] === 1) count++;
+        if (peaks[right] === 1) count++;
+
+        const result = segmentTree.query(0, 0, n - 1, left, right) - count;
+        ans.push(result);
+      }
+
+      continue;
+    }
+
+    const [_, idx, val] = q;
+    nums[idx] = val;
+    if (idx - 1 >= 0 && idx + 1 < n) {
+      if (nums[idx] > nums[idx - 1] && nums[idx] > nums[idx + 1]) {
+        segmentTree.update(0, 0, n - 1, idx, 1);
+        peaks[idx] = 1;
+      } else {
+        segmentTree.update(0, 0, n - 1, idx, 0);
+        peaks[idx] = 0;
+      }
+    }
+
+    const leftIdx = idx - 1;
+    if (leftIdx - 1 >= 0 && leftIdx + 1 < n) {
+      if (
+        nums[leftIdx] > nums[leftIdx - 1] &&
+        nums[leftIdx] > nums[leftIdx + 1]
+      ) {
+        segmentTree.update(0, 0, n - 1, leftIdx, 1);
+        peaks[leftIdx] = 1;
+      } else {
+        segmentTree.update(0, 0, n - 1, leftIdx, 0);
+        peaks[leftIdx] = 0;
+      }
+    }
+
+    const rightIdx = idx + 1;
+    if (rightIdx - 1 >= 0 && rightIdx + 1 < n) {
+      if (
+        nums[rightIdx] > nums[rightIdx - 1] &&
+        nums[rightIdx] > nums[rightIdx + 1]
+      ) {
+        segmentTree.update(0, 0, n - 1, rightIdx, 1);
+        peaks[rightIdx] = 1;
+      } else {
+        segmentTree.update(0, 0, n - 1, rightIdx, 0);
+        peaks[rightIdx] = 0;
+      }
+    }
+  }
+
+  return ans;
+};
+
+class SegmentTree {
+  constructor(n) {
+    this.segment = new Array(4 * n + 1).fill(0);
+  }
+
+  build(idx, low, high, arr) {
+    if (low === high) {
+      this.segment[idx] = arr[low];
+      return;
+    }
+
+    const mid = Math.floor((low + high) / 2);
+    this.build(2 * idx + 1, low, mid, arr);
+    this.build(2 * idx + 2, mid + 1, high, arr);
+    this.segment[idx] = this.segment[2 * idx + 1] + this.segment[2 * idx + 2];
+  }
+
+  query(idx, low, high, left, right) {
+    if (right < low || high < left) return 0;
+    if (low >= left && high <= right) return this.segment[idx];
+
+    const mid = Math.floor((low + high) / 2);
+    const leftVal = this.query(2 * idx + 1, low, mid, left, right);
+    const rightVal = this.query(2 * idx + 2, mid + 1, high, left, right);
+
+    return leftVal + rightVal;
+  }
+
+  update(idx, low, high, i, val) {
+    if (low === high) {
+      this.segment[idx] = val;
+      return;
+    }
+
+    const mid = Math.floor((low + high) / 2);
+    if (i <= mid) {
+      this.update(2 * idx + 1, low, mid, i, val);
+    } else {
+      this.update(2 * idx + 2, mid + 1, high, i, val);
+    }
+
+    this.segment[idx] = this.segment[2 * idx + 1] + this.segment[2 * idx + 2];
+  }
+}
