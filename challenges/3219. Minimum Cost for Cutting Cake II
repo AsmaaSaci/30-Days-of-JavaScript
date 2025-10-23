@@ -1,0 +1,46 @@
+/**
+ * @param {number} m
+ * @param {number} n
+ * @param {number[]} horizontalCut
+ * @param {number[]} verticalCut
+ * @return {number}
+ */
+var minimumCost = function(m, n, horizontalCut, verticalCut) {
+    // real lengths of arrays
+    const mM = m - 1, nM = n - 1
+    // sort both arrays desc
+    const cmp = (a, b) => b - a
+    const hCuts = horizontalCut.sort(cmp), vCuts = verticalCut.sort(cmp)
+
+
+    let result = 0
+    let i = 0, j = 0
+    // do merge-like operation
+    for (; i < mM && j < nM; ) {
+        let outcome
+        const hCut = hCuts[i], vCut = vCuts[j]
+
+        if (hCut > vCut) {
+            outcome = hCut * (1 + j)
+            i++
+        } else {
+            outcome = vCut * (1 + i)
+            j++
+        }
+
+        result += outcome
+    }
+
+    // one and only one of below loops is executed
+    for (; i < mM; i++) {
+        const hOutcome = hCuts[i] * n
+        result += hOutcome
+    }
+    for (; j < nM; j++) {
+        const vOutcome = vCuts[j] * m
+        result += vOutcome
+    }
+
+
+    return result
+};
