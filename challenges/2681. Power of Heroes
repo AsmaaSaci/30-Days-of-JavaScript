@@ -1,0 +1,15 @@
+function sumOfPower(nums: number[]): number {
+    const MOD = BigInt(1e9 + 7);
+    const sortedNums = nums.sort((a, b) => a - b).map(BigInt);
+    let res = 0n;
+    let prefixSum = 0n;
+
+    for (const num of sortedNums) {
+        // Calculate the power of the current number and its contribution
+        res = (res + (num * num % MOD) * num % MOD + (num * num % MOD) * prefixSum % MOD) % MOD;
+        // Update the prefix sum
+        prefixSum = (prefixSum * 2n + num) % MOD;
+    }
+
+    return Number(res);
+};
