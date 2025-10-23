@@ -1,0 +1,291 @@
+/**
+ * @intuition
+ * The key insight is that a shortest common supersequence (SCS) must include all characters
+ * from all words with minimal additional characters. We need to analyze character dependencies
+ * and find the minimum feedback vertex set to break cycles in the dependency graph.
+ *
+ * @approach
+ * 1. Build a directed graph where edges represent character dependencies
+ * 2. Find strongly connected components (SCCs) using Tarjan's algorithm
+ * 3. Create a condensed graph of SCCs and find a topological ordering
+ * 4. For each SCC, find the minimum feedback vertex set (FVS) to break cycles
+ * 5. Combine the patterns from each SCC to form the final frequency arrays
+ *
+ * @complexity
+ * Time: O(n + 2^c) where n is the number of words and c is the number of unique characters
+ * Space: O(c^2) for storing the graph and results
+ *
+ * @param {string[]} words
+ * @return {number[][]}
+ */
+const supersequences = words => {
+  const ALPHABET_SIZE = 26
+  const ASCII = 'a'.charCodeAt(0)
+
+  const usedChars = Array(ALPHABET_SIZE).fill(false)
+  for (const word of words) {
+    for (const char of word) {
+      usedChars[char.charCodeAt(0) - ASCII] = true
+    }
+  }
+
+  const charToIndex = Array(ALPHABET_SIZE).fill(-1)
+  const indexToChar = []
+  let uniqueCharCount = 0
+
+  for (let charCode = 0; charCode < ALPHABET_SIZE; charCode++) {
+    if (usedChars[charCode]) {
+      charToIndex[charCode] = uniqueCharCount++
+      indexToChar.push(String.fromCharCode(ASCII + charCode))
+    }
+  }
+
+  const dependencyGraph = Array(uniqueCharCount).fill().map(() => Array(uniqueCharCount).fill(false))
+  const hasSelfDependency = Array(uniqueCharCount).fill(false)
+
+  for (const word of words) {
+    const firstCharIndex = charToIndex[word[0].charCodeAt(0) - ASCII]
+    const secondCharIndex = charToIndex[word[1].charCodeAt(0) - ASCII]
+
+    if (firstCharIndex === secondCharIndex) {
+      hasSelfDependency[firstCharIndex] = true
+    } else {
+      dependencyGraph[firstCharIndex][secondCharIndex] = true
+    }
+  }
+
+  const findStronglyConnectedComponents = graph => {
+    const nodeCount = graph.length
+    const discoveryTime = Array(nodeCount).fill(-1)
+    const lowestReachable = Array(nodeCount).fill(0)
+    const componentId = Array(nodeCount).fill(-1)
+    const isInStack = Array(nodeCount).fill(false)
+    const nodeStack = []
+    let time = 0
+    let componentCount = 0
+
+    const tarjanDFS = nodeId => {
+      discoveryTime[nodeId] = lowestReachable[nodeId] = time++
+      nodeStack.push(nodeId)
+      isInStack[nodeId] = true
+
+      for (let neighborId = 0; neighborId < nodeCount; neighborId++) {
+        if (!graph[nodeId][neighborId]) continue
+
+        if (discoveryTime[neighborId] === -1) {
+          tarjanDFS(neighborId)
+          lowestReachable[nodeId] = Math.min(lowestReachable[nodeId], lowestReachable[neighborId])
+        } else if (isInStack[neighborId]) {
+          lowestReachable[nodeId] = Math.min(lowestReachable[nodeId], discoveryTime[neighborId])
+        }
+      }
+
+      if (lowestReachable[nodeId] === discoveryTime[nodeId]) {
+        while (true) {
+          const poppedNode = nodeStack.pop()
+          isInStack[poppedNode] = false
+          componentId[poppedNode] = componentCount
+          if (poppedNode === nodeId) break
+        }
+        componentCount++
+      }
+    }
+
+    for (let nodeId = 0; nodeId < nodeCount; nodeId++) {
+      if (discoveryTime[nodeId] === -1) {
+        tarjanDFS(nodeId)
+      }
+    }
+
+    return { componentId, componentCount }
+  }
+
+  const { componentId, componentCount } = findStronglyConnectedComponents(dependencyGraph)
+
+  const componentMembers = Array(componentCount).fill().map(() => [])
+  for (let nodeId = 0; nodeId < uniqueCharCount; nodeId++) {
+    componentMembers[componentId[nodeId]].push(nodeId)
+  }
+
+  const condensedGraph = Array(componentCount).fill().map(() => [])
+  const incomingEdgeCount = Array(componentCount).fill(0)
+
+  for (let sourceNode = 0; sourceNode < uniqueCharCount; sourceNode++) {
+    for (let targetNode = 0; targetNode < uniqueCharCount; targetNode++) {
+      if (dependencyGraph[sourceNode][targetNode] && componentId[sourceNode] !== componentId[targetNode]) {
+        condensedGraph[componentId[sourceNode]].push(componentId[targetNode])
+        incomingEdgeCount[componentId[targetNode]]++
+      }
+    }
+  }
+
+  const topologicalOrder = []
+  const noIncomingEdgesQueue = []
+
+  for (let componentIdx = 0; componentIdx < componentCount; componentIdx++) {
+    if (incomingEdgeCount[componentIdx] === 0) {
+      noIncomingEdgesQueue.push(componentIdx)
+    }
+  }
+
+  while (noIncomingEdgesQueue.length > 0) {
+    const currentComponent = noIncomingEdgesQueue.shift()
+    topologicalOrder.push(currentComponent)
+
+    for (const nextComponent of condensedGraph[currentComponent]) {
+      if (--incomingEdgeCount[nextComponent] === 0) {
+        noIncomingEdgesQueue.push(nextComponent)
+      }
+    }
+  }
+
+  const isGraphAcyclicAfterRemoval = (graph, removalMask, nodeCount) => {
+    const isNodeRemoved = Array(nodeCount).fill(false)
+    for (let nodeId = 0; nodeId < nodeCount; nodeId++) {
+      if (removalMask & (1 << nodeId)) {
+        isNodeRemoved[nodeId] = true
+      }
+    }
+
+    const inDegree = Array(nodeCount).fill(0)
+    for (let sourceNode = 0; sourceNode < nodeCount; sourceNode++) {
+      if (isNodeRemoved[sourceNode]) continue
+
+      for (let targetNode = 0; targetNode < nodeCount; targetNode++) {
+        if (!isNodeRemoved[targetNode] && graph[sourceNode][targetNode]) {
+          inDegree[targetNode]++
+        }
+      }
+    }
+
+    const zeroInDegreeQueue = []
+    let processedNodeCount = 0
+    const remainingNodeCount = nodeCount - countSetBits(removalMask)
+
+    for (let nodeId = 0; nodeId < nodeCount; nodeId++) {
+      if (!isNodeRemoved[nodeId] && inDegree[nodeId] === 0) {
+        zeroInDegreeQueue.push(nodeId)
+      }
+    }
+
+    while (zeroInDegreeQueue.length > 0) {
+      const currentNode = zeroInDegreeQueue.shift()
+      processedNodeCount++
+
+      for (let neighborNode = 0; neighborNode < nodeCount; neighborNode++) {
+        if (!isNodeRemoved[neighborNode] && graph[currentNode][neighborNode] && --inDegree[neighborNode] === 0) {
+          zeroInDegreeQueue.push(neighborNode)
+        }
+      }
+    }
+
+    return processedNodeCount === remainingNodeCount
+  }
+
+  const countSetBits = number => {
+    let count = 0
+    while (number > 0) {
+      count += number & 1
+      number >>= 1
+    }
+    return count
+  }
+
+  const findMinimumFeedbackVertexSet = (graph, nodeCount) => {
+    const frequencyPatterns = new Set()
+
+    for (let setSize = 0; setSize <= nodeCount; setSize++) {
+      let patternFound = false
+
+      for (let mask = 0; mask < (1 << nodeCount); mask++) {
+        if (countSetBits(mask) !== setSize) continue
+
+        if (isGraphAcyclicAfterRemoval(graph, mask, nodeCount)) {
+          const charFrequencies = Array(nodeCount).fill(1)
+          for (let nodeId = 0; nodeId < nodeCount; nodeId++) {
+            if (mask & (1 << nodeId)) {
+              charFrequencies[nodeId] = 2
+            }
+          }
+
+          frequencyPatterns.add(charFrequencies.join(','))
+          patternFound = true
+        }
+      }
+
+      if (patternFound) break
+    }
+
+    return Array.from(frequencyPatterns).map(pattern => pattern.split(',').map(Number))
+  }
+
+  const componentPatterns = Array(componentCount)
+
+  for (let componentIdx = 0; componentIdx < componentCount; componentIdx++) {
+    const componentNodes = componentMembers[componentIdx]
+
+    if (componentNodes.length === 1) {
+      componentPatterns[componentIdx] = hasSelfDependency[componentNodes[0]] ? [[2]] : [[1]]
+      continue
+    }
+
+    const subgraph = Array(componentNodes.length).fill().map(() => Array(componentNodes.length).fill(false))
+    const localToGlobalNodeMap = Array(componentNodes.length)
+
+    for (let localIdx = 0; localIdx < componentNodes.length; localIdx++) {
+      const globalNodeId = componentNodes[localIdx]
+      localToGlobalNodeMap[localIdx] = globalNodeId
+
+      if (hasSelfDependency[globalNodeId]) {
+        subgraph[localIdx][localIdx] = true
+      }
+
+      for (let targetLocalIdx = 0; targetLocalIdx < componentNodes.length; targetLocalIdx++) {
+        const targetGlobalId = componentNodes[targetLocalIdx]
+        if (dependencyGraph[globalNodeId][targetGlobalId]) {
+          subgraph[localIdx][targetLocalIdx] = true
+        }
+      }
+    }
+
+    componentPatterns[componentIdx] = findMinimumFeedbackVertexSet(subgraph, componentNodes.length)
+  }
+
+  let frequencyCombinations = [[]]
+
+  for (const componentIdx of topologicalOrder) {
+    const newCombinations = []
+
+    for (const baseFrequency of frequencyCombinations) {
+      for (const componentPattern of componentPatterns[componentIdx]) {
+        const extendedFrequency = [...baseFrequency]
+        while (extendedFrequency.length < uniqueCharCount) extendedFrequency.push(0)
+
+        for (let localIdx = 0; localIdx < componentMembers[componentIdx].length; localIdx++) {
+          const globalNodeId = componentMembers[componentIdx][localIdx]
+          extendedFrequency[globalNodeId] = componentPattern[localIdx]
+        }
+
+        newCombinations.push(extendedFrequency)
+      }
+    }
+
+    frequencyCombinations = newCombinations
+  }
+
+  const uniqueFrequencyArrays = new Set()
+
+  for (const charFrequencies of frequencyCombinations) {
+    const alphabetFrequencies = Array(ALPHABET_SIZE).fill(0)
+
+    for (let charIdx = 0; charIdx < uniqueCharCount; charIdx++) {
+      alphabetFrequencies[indexToChar[charIdx].charCodeAt(0) - ASCII] = charFrequencies[charIdx]
+    }
+
+    uniqueFrequencyArrays.add(alphabetFrequencies.join(','))
+  }
+
+  return Array.from(uniqueFrequencyArrays).map(frequencyString => frequencyString.split(',').map(Number))
+}
+
+module.exports = supersequences
