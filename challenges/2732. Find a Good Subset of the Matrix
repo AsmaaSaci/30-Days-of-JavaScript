@@ -1,0 +1,47 @@
+/**
+ * @param {number[][]} grid
+ * @return {number[]}
+ */
+var goodSubsetofBinaryMatrix = function(grid) {
+    const R = grid.length, C = grid[0].length,
+        RM = R - 1, CM = C - 1
+    // upper bound for val (not inclusive)
+    const ub = 1 << C
+    
+
+    const val2idx = []
+    for (const [i, row] of grid.entries()) {
+        let val = 0
+        // convert each row into a value `val`
+        for (let j = 0, bit = 1; j < C; j++, bit <<= 1) {
+            if (row[j]) {
+                val |= bit
+            }
+        }
+        if (val === 0)  return [i]
+
+        // and map each value `val` to a row index of it
+        // here we use the last index
+        val2idx[val] = i
+    }
+
+
+    // the problem requires us to return a sorted array,
+    // so we use a comparator
+    const cmp = (a, b) => a - b
+    for (let a = 1; a < ub; a++) {
+        const extA = val2idx[a]
+        if (extA === undefined) continue
+
+        for (let b = 1; b < ub; b++) {
+            if ((a & b) !== 0)    continue
+            const extB = val2idx[b]
+            if (extB === undefined) continue
+
+            return [extA, extB].sort(cmp)
+        }
+    }
+
+
+    return []
+};
