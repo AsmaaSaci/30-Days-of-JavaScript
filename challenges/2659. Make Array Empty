@@ -1,0 +1,54 @@
+var countOperationsToEmptyArray = function(nums) {
+  let n = nums.length, segTree = new SegmentTree(Array(n).fill(1));
+  nums = nums.map((num, index) => [num, index]).sort((a, b) => a[0] - b[0]);
+  let prevIndex = -1, ans = 0;
+  for (let [_num, index] of nums) {
+    if (index >= prevIndex) {
+      ans += segTree.sumRange(prevIndex + 1, index);
+    } else {
+      ans += segTree.sumRange(prevIndex + 1, n - 1) + segTree.sumRange(0, index);
+    }
+    segTree.update(index);
+    prevIndex = index;
+  }
+  return ans;
+};
+
+class SegmentTree {
+  constructor(arr) {
+    let n = arr.length;
+    this.size = n;
+    this.segTree = Array(n * 2).fill(0);
+    this.build(arr);
+  }
+  build(arr) {
+    let n = this.size;
+    for (let i = n; i < n * 2; i++) {
+      this.segTree[i] = arr[i - n]; // populate leaf values
+    }
+    for (let i = n - 1; i > 0; i--) {
+      this.segTree[i] = this.segTree[i * 2] + this.segTree[i * 2 + 1]; // sum
+    }
+  }
+  update(index) {
+    let n = this.size, idx = index + n;
+    this.segTree[idx] = 0;
+    idx = Math.floor(idx / 2);
+
+    while (idx > 0) {
+      this.segTree[idx] = this.segTree[idx * 2] + this.segTree[idx * 2 + 1];
+      idx = Math.floor(idx / 2);
+    }
+  }
+  sumRange(left, right) {
+    let n = this.size, sum = 0;
+    let left_idx = left + n, right_idx = right + n;
+    while (left_idx <= right_idx) {
+      if (left_idx % 2 === 1) sum += this.segTree[left_idx++];
+      if (right_idx % 2 === 0) sum += this.segTree[right_idx--];
+      left_idx = Math.floor(left_idx / 2);
+      right_idx = Math.floor(right_idx / 2);
+    }
+    return sum;
+  }
+}
