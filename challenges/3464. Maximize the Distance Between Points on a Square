@@ -1,0 +1,62 @@
+/**
+ * @param {number} side
+ * @param {number[][]} points
+ * @param {number} k
+ * @return {number}
+ */
+var maxDistance = function(side, points, k) {
+    const n = points.length
+    const pointOnLine = (a) => {
+        let cur = a[0] + a[1];
+        if(a[0] === side && a[1] <= side){
+            cur += ((side - a[1]) << 1)
+        }
+        else if(a[1] === 0 && a[0] >= 0){
+            cur += (((side << 1)- a[0]) << 1) 
+        }
+        return cur
+    }
+
+    const manhattan = (a, b) => {
+        return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+    }
+
+    let sorted = points.sort((a,b) => (pointOnLine(a) - pointOnLine(b)))
+    left = 1 
+    right = side
+    found = -1;
+    while(left <= right){
+        let mid = Math.floor((right + left) / 2);
+        let queue = [[points[0], points[0], 1]]
+        let runningLongest = 1;
+        for(let i = 1; i < n; i++){
+            let head = points[i];
+            let tail = points[i];
+            let longestPath = 1;
+            while(queue.length > 0){
+                let cur = queue[0];
+                if(manhattan(head, cur[0]) >= mid){
+                    if(cur[2] + 1 >= longestPath && manhattan(head, cur[1]) >= mid){
+                        tail = cur[1];
+                        longestPath = cur[2] + 1;
+                        if(runningLongest < longestPath){
+                            runningLongest = longestPath;
+                        }
+                    }
+                    queue.shift();
+                } else {
+                    break;
+                }
+            }
+            queue.push([head, tail, longestPath]);
+        }
+        if(runningLongest >= k){
+            found = mid;
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return found;
+};
