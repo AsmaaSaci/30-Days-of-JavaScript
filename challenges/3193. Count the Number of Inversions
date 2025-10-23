@@ -1,0 +1,45 @@
+const MOD = 1_000_000_007;
+
+/**
+ * @param {number} n
+ * @param {number[][]} requirements
+ * @return {number}
+ */
+var numberOfPermutations = function(n, requirements) {
+    let dp = Array.from({ length: n + 1 }, () => Array(n * (n - 1) / 2 + 1).fill(null));
+
+    requirements.sort((a, b) => a[0] - b[0]);
+
+    for (let r of requirements) {
+        if (count(r[0], r[1]) === 0) {
+            return 0;
+        }
+        for (let i = 0; i < dp[r[0]].length; i++) {
+            if (i !== r[1]) {
+                dp[r[0]][i] = 0;
+            }
+        }
+    }
+
+    let last = requirements[requirements.length - 1];
+    return dp[last[0]][last[1]];
+
+    function count(pos, inv) {
+        if (inv < 0) {
+            return 0;
+        }
+        if (pos === 0) {
+            return inv === 0 ? 1 : 0;
+        }
+        if (dp[pos][inv] !== null) {
+            return dp[pos][inv];
+        }
+
+        let res = 0;
+        for (let i = 0; i <= pos; i++) {
+            res = (res + count(pos - 1, inv - i)) % MOD;
+        }
+        dp[pos][inv] = res;
+        return res;
+    }
+};
