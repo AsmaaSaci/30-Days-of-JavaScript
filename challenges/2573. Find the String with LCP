@@ -1,0 +1,56 @@
+/**
+ * @param {number[][]} lcp
+ * @return {string}
+ */
+var findTheString = function (lcp) {
+  let n = lcp.length;
+
+  for (let i = 0; i < n; i++) {
+    let bound = n - i;
+    // Cond#1
+    if (lcp[i][i] != bound) return "";
+
+    for (let j = 0; j < i; j++) {
+      // Cond#2  
+      if (lcp[i][j] != lcp[j][i]) return "";
+      // Cond#3
+      if (lcp[i][j] > bound) return "";
+      // Cond#4
+      if (lcp[i - 1][j - 1] && lcp[i][j] + 1 != lcp[i - 1][j - 1]) return "";
+    }
+  }
+
+  let chars = Array(n).fill();
+  let cc = 97;
+  let ch = "a";
+
+  for (let i = 0; i < n; i++) {
+    if (chars[i]) {
+      for (let j = 0; j < i; j++) {
+        // Cond#0
+        if ((chars[j] == chars[i]) ^ (lcp[i][j] > 0)) return "";
+      }
+      continue;
+    }
+    // Cond#6
+    if (cc > 122) return "";
+
+    // Cond#0
+    for (let j = 0; j < i; j++) {
+      if (lcp[i][j] > 0) return "";
+    }
+
+    ch = String.fromCharCode(cc++);
+    chars[i] = ch;
+
+    for (let j = i + 1; j < n; j++) {
+      if (lcp[i][j] > 0) {
+        // Cond#0
+        if (chars[j]) return "";
+        else chars[j] = ch;
+      }
+    }
+  }
+
+  return chars.join("");
+};
