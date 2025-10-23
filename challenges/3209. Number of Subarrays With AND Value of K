@@ -1,0 +1,59 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var countSubarrays = function(nums, k) {
+    return atLeastK(nums, k) - atLeastK(nums, k + 1);
+};
+
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+function atLeastK(nums, k) {
+    let result = 0;
+    let temp = new Array(32).fill(0); // Frequency vector to keep track of bit counts
+    let left = 0;
+
+    for (let right = 0; right < nums.length; right++) {
+        // Update the frequency vector with the bits of the current number
+        for (let i = 0; i < 32; i++) {
+            if ((1 << i) & nums[right]) {
+                temp[i]++;
+            }
+        }
+
+        // Adjust the window size if the AND value of the current window is less than k
+        while ((right - left + 1) > 0 && calculateAND(temp, right - left + 1) < k) {
+            // Update the frequency vector by removing the bits of the leftmost number
+            for (let i = 0; i < 32; i++) {
+                if ((1 << i) & nums[left]) {
+                    temp[i]--;
+                }
+            }
+            left++;
+        }
+
+        // Add the number of subarrays ending at `right` that have AND value at least k
+        result += (right - left + 1);
+    }
+
+    return result;
+}
+
+/**
+ * @param {number[]} temp
+ * @param {number} windowSize
+ * @return {number}
+ */
+function calculateAND(temp, windowSize) {
+    let andValue = 0;
+    for (let i = 0; i < 32; i++) {
+        if (temp[i] === windowSize) {
+            andValue += (1 << i);
+        }
+    }
+    return andValue;
+}
