@@ -1,0 +1,31 @@
+/**
+ * @param {number[][]} values
+ * @return {number}
+ */
+var maxSpending = function(values) {
+    const R = values.length, C = values[0].length, 
+        RC = R * C, CM = C - 1
+    const indices = new Array(R).fill(CM)
+    let result = 0
+
+
+    for (let d = 1; d <= RC; d++) {
+        // find the cheapest item on the sale edge
+        let bestI = -1, bestPrice = Infinity
+        for (const [i, idx] of indices.entries()) {
+            if (idx === -1) continue
+            const price = values[i][idx]
+            if (price < bestPrice) {
+                bestPrice = price
+                bestI = i
+            }
+        }
+
+        const outcome = d * bestPrice
+        result += outcome
+        indices[bestI]--
+    }
+
+
+    return result
+};
