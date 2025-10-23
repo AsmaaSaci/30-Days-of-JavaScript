@@ -1,0 +1,28 @@
+/**
+ * @param {string} word
+ * @param {string[]} forbidden
+ * @return {number}
+ */
+var longestValidSubstring = function(word, forbidden) {
+    let forbiddenMap = new Set();
+    for(let i=0;i<forbidden.length;i++){
+        forbiddenMap.add(forbidden[i]);
+    }
+    let max=0;
+    for(let left=0,right=0;right<word.length;right++){
+        let check = right,checkStr="";
+        //Check each substring ending at word[right] and having length less than or equal to 10. 
+		//As the question constraints says "1 <= forbidden[i].length <= 10"
+        while(right-check<10 && check>=left){
+            checkStr = word[check]+checkStr;
+            if(forbiddenMap.has(checkStr)){//we can't take the character word[check] in the valid window
+                left=check+1;//Move 'left' to check+1 to remove character word[check] from the window
+                break;
+            }
+            check--;
+        }
+        //Here we know that the window from left to right is a valid, as we took care of it in the above while loop
+        max = Math.max(max,right-left+1);
+    }
+    return max;
+};
