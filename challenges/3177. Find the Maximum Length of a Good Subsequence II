@@ -1,0 +1,101 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var maximumLength = function(nums, k) {
+    const len = nums.length, lenM = len - 1,
+        lenP = len + 1, kP = k + 1
+
+    // for a certain index `idx`, 
+    // the end index of the same continuous element
+    const idx2end = new Array(len)
+    {
+        let sf = 0, prev = nums[sf]
+        for (let i = 1; i < len; i++) {
+            const here = nums[i]
+            if (here !== prev) {
+                const iM = i - 1
+                for (let j = sf; j < i; j++) {
+                    idx2end[j] = iM
+                }
+                sf = i
+                prev = here
+            }
+        }
+
+        for (let j = sf; j < len; j++) {
+            idx2end[j] = lenM
+        }
+    }
+    
+    // for a certain index `idx`, 
+    // the next index of the same element
+    const val2idx = new Map()
+    const idx2next = new Array(len)
+    for (const [i, val] of nums.entries()) {
+        const ext = val2idx.get(val)
+        if (ext !== undefined) {
+            idx2next[ext] = i
+        }
+        val2idx.set(val, i)
+    }
+    
+
+    // use double cache: memo and locals
+    // locals will not apply the max operation while memo will do
+    // memo is the primary one
+    const memo = new Array(lenP)
+    for (const i of memo.keys())
+        memo[i] = new Array(kP)
+    memo.at(-1).fill(0)
+
+    const locals = new Array(lenP)
+    for (const i of locals.keys())
+        locals[i] = new Array(kP)
+    locals.at(-1).fill(0)
+    
+
+    // the dp function that returns the `memo` result, 
+    // but it also updates `locals`
+    function dp(fromI, rmg) {
+        const ext = memo[fromI][rmg]
+        if (ext !== undefined)  return ext
+
+        let result = 1
+        const nextIdx = idx2next[fromI]
+        // recurse to the next same element -- use `locals`
+        if (nextIdx !== undefined) {
+            const subresultSame = locals[nextIdx][rmg]
+            const outcomeSame = 1 + subresultSame
+            result = Math.max(result, outcomeSame)
+        }
+
+        const here = nums[fromI]
+        let end = idx2end[fromI]
+        // recurse to the next diff element -- use `memo`
+        if (end < lenM && rmg > 0) {
+            const subresultDiff = memo[end + 1][rmg - 1]
+            const outcomeDiff = end + 1 - fromI + subresultDiff
+            result = Math.max(result, outcomeDiff)
+        }
+
+        // update `locals`
+        locals[fromI][rmg] = result
+        // do the max operation for `memo`
+        return memo[fromI][rmg] = Math.max(result, memo[fromI + 1][rmg])
+    }
+
+
+    let result = 0
+    for (let rmg = 0; rmg < kP; rmg++) {
+        for (let fromI = lenM; fromI > -1; fromI--) {
+            const outcome = dp(fromI, rmg)
+            if (rmg === k)
+                result = Math.max(result, outcome)
+        }
+    }
+
+
+    return result
+};
