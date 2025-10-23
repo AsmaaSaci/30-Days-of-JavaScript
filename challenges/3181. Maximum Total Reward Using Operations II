@@ -1,0 +1,10 @@
+const ll = BigInt;
+const maxTotalReward = (a) => {
+    a.sort((x, y) => x - y);
+    let dp = 1n;
+    for (const x of a) {
+        let v = dp & ((1n << ll(x)) - 1n);
+        dp |= v << ll(x);
+    }
+    return dp.toString(2).length - 1;
+};
