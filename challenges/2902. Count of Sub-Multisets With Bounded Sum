@@ -1,0 +1,62 @@
+let MOD = 1000000007; // Define the modulo value
+let sumsMapPre = Array(20001).fill(0); // Initialize an array to store the prefix sum counts
+let sumsMapCur = Array(20001).fill(0); // Initialize an array to store the current sum counts
+let sumsArr = Array(20001).fill(0); // Initialize an array to store the sums
+
+/**
+ * Function to count the number of sub-multisets in a given range.
+ * @param {number[]} nums - The array of numbers.
+ * @param {number} l - The left bound of the range.
+ * @param {number} r - The right bound of the range.
+ * @return {number} - The count of sub-multisets in the specified range.
+ */
+var countSubMultisets = function(nums, l, r) {
+  let n = nums.length; // Get the length of the input array
+  nums.sort(); // Sort the input array
+  
+  // Initialize the prefix sum arrays and variables
+  sumsMapCur.fill(0);
+  sumsMapPre.fill(0);
+  sumsMapCur[0] = 1;
+  let t = 0;
+  let tt = 0;
+
+  let acc = 0; // Initialize an accumulator variable
+  
+  // Iterate through the numbers in the input array
+  for (let i = 0; i < n; i++) {
+    if (nums[i] == nums[i - 1]) acc += nums[i]; // Accumulate the sum if the current number is the same as the previous one
+    else {
+      tt = t; // Update the temporary variable tt
+      acc = nums[i]; // Update the accumulator variable
+	  
+      // Update the sumsMapPre and sumsMapCur arrays
+      for (let j = t; j >= 0; j--) {
+        sumsMapPre[sumsArr[j]] = (sumsMapCur[sumsArr[j]] + sumsMapPre[sumsArr[j]]) % MOD;
+        sumsMapCur[sumsArr[j]] = 0;
+      }
+    }
+
+    // Calculate the counts of sub-multisets for each sum
+    for (let j = tt; j >= 0; j--) {
+      let newSum = sumsArr[j] + acc; // Calculate the new sum
+      if (newSum <= r) {
+        if (!sumsMapCur[newSum] && !sumsMapPre[newSum]) {
+          sumsArr[++t] = newSum; // Store the new sum in the sumsArr array
+        }
+
+        // Update the counts in sumsMapCur
+        let cnt = (sumsMapPre[sumsArr[j]] + sumsMapCur[newSum]) % MOD;
+        sumsMapCur[newSum] = cnt;
+      }
+    }
+  }
+
+  let res = 0; // Initialize the result variable
+  // Calculate the final result by summing the counts within the specified range
+  for (let i = l; i <= r; i++) {
+    res = (res + sumsMapPre[i] + sumsMapCur[i] ?? 0) % MOD;
+  }
+
+  return res; // Return the final result
+};
