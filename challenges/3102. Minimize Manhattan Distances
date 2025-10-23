@@ -1,0 +1,35 @@
+/**
+ * @param {number[][]} points
+ * @return {number}
+ */
+var minimumDistance = function(points) {
+    // Calculate transformed values
+    const s = points.map(([x, y]) => x + y);
+    const d = points.map(([x, y]) => x - y);
+
+    // Get extremes
+    const maxS = Math.max(...s), minS = Math.min(...s);
+    const maxD = Math.max(...d), minD = Math.min(...d);
+
+    // Identify indices of points that contribute to the extremes
+    const extremeIndices = new Set();
+    s.forEach((val, i) => {
+        if (val === maxS || val === minS || d[i] === maxD || d[i] === minD) {
+            extremeIndices.add(i);
+        }
+    });
+
+    // Compute maximum distance after removing each extreme point
+    let minMaxDist = Infinity;
+    for (let i of extremeIndices) {
+        const tempS = [...s.slice(0, i), ...s.slice(i + 1)];
+        const tempD = [...d.slice(0, i), ...d.slice(i + 1)];
+        const maxDist = Math.max(
+            Math.max(...tempS) - Math.min(...tempS),
+            Math.max(...tempD) - Math.min(...tempD)
+        );
+        minMaxDist = Math.min(minMaxDist, maxDist);
+    }
+
+    return minMaxDist;
+};
