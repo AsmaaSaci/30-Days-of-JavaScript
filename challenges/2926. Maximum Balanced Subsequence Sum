@@ -1,0 +1,49 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var maxBalancedSubsequenceSum = function (nums) {
+    const n = nums.length;
+
+    const arr = new Array(n);
+    for (let i = 0; i < n; i++) arr[i] = nums[i] - i;
+
+    // Use two arrays in place of a map, arr[i] => dp[i]
+    const xArr = []; // Value of arr[i], should be in increasing order for ease of searching
+    const dpArr = []; // Corresponding value of dp[i], e.g. dpArr[i] corresponds to xArr[i]
+
+    for (let i = 0; i < n; i++) {
+        const x = arr[i];
+        const idx = binS(xArr, x); // The index of last item in aArr <= x
+        let dpVal;
+        if (idx == -1) { // Cannot pair with anyone
+            dpVal = nums[i]; // Alone
+        }
+        else {
+            dpVal = Math.max(nums[i], nums[i] + dpArr[idx])
+        }
+        let toRemoveCount = 0;
+        for (let j = idx + 1; j < xArr.length; j++) {
+            if (dpArr[j] <= dpVal) toRemoveCount++;
+            else break;
+        }
+        xArr.splice(idx + 1, toRemoveCount, x);
+        dpArr.splice(idx + 1, toRemoveCount, dpVal);
+    }
+
+    return dpArr[dpArr.length - 1];
+
+
+    function binS(arr, value) {
+        // Return the index of last item in arr <= value
+        // Therefore upper-bound
+        let low = 0;
+        let high = arr.length - 1;
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            if (arr[mid] <= value) low = mid + 1;
+            else high = mid - 1;
+        }
+        return high;
+    }
+};
