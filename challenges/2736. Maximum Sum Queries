@@ -1,0 +1,85 @@
+/**
+ * @param {number[]} nums1
+ * @param {number[]} nums2
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var maximumSumQueries = function(nums1, nums2, queries) {
+    const len = nums1.length, lenM = len - 1,
+        maxA = Math.max(...nums1), maxB = Math.max(...nums2)
+    const items = nums1.map((a, i) => [a, nums2[i]])
+    items.sort((A, B) => A[0] - B[0])
+
+    // max element of nums2 from right
+    const maxBFR = new Array(1 + len)
+    maxBFR[len] = 0
+    for (let i = lenM; i > -1; i--) {
+        maxBFR[i] = Math.max(items[i][1], maxBFR[i + 1])
+    }
+
+    const sums = items.map(item => item[0] + item[1])
+    // use sqrt balancing to solve segment maximum query in O(sqrt(n)) time
+    const unitSize = Math.floor(Math.sqrt(len))
+    const unitCount = Math.ceil(len / unitSize)
+    const units = new Array(unitCount)
+    for (let i = 0; i < unitCount; i += unitSize) {
+        let outcome = -Infinity
+        for (let offset = 0; offset < unitSize && i + offset < len; offset++) {
+            outcome = Math.max(outcome, sums[i + offset])
+        }
+        units[i] = outcome
+    }
+    // find max sum from subarray [fromI...fromJ],
+    // using sqrt balancing
+    function getMaxSum(fromI, toI) {
+        let outcome = -Infinity
+
+        const fromIdx = Math.floor(fromI / unitSize),
+            toIdx = Math.floor(toI / unitSize)
+        if (fromIdx < toIdx + 1) {
+            for (let i = fromI; i <= toI; i++)
+                outcome = Math.max(outcome, sums[i])
+        } else {
+            for (let idx = fromIdx; idx < toIdx; idx++)
+                outcome = Math.max(outcome, units[idx])
+            for (let i = (fromIdx + 1) * unitSize - 1; i >= fromI; i--)
+                outcome = Math.max(outcome, sums[i])
+            for (let i = toIdx * unitSize; i <= toI; i++)
+                outcome = Math.max(outcome, sums[i])
+        }
+
+        return outcome
+    }
+
+
+    return queries.map(([x, y]) => {
+        if (x > maxA || y > maxB)   return -1
+
+        let low = 0, high = lenM
+        // find earliest high where
+        // items[high][0] >= x
+        while (low < high) {
+            const mid = (low + high) >> 1
+            if (items[mid][0] >= x) high = mid
+            else    low = mid + 1
+        }
+
+        // where the valid subarray begins
+        const fromI = high
+        low = fromI
+        high = lenM
+        // find latest low where
+        // maxBFR[low] >= y
+        if (maxBFR[low] < y) return -1
+        while (low < high) {
+            const mid = (1 + low + high) >> 1
+            if (maxBFR[mid] >= y)   low = mid
+            else    high = mid - 1
+        }
+        // where the valid subarray ends
+        const toI = low
+
+        const result = getMaxSum(fromI, toI)
+        return result
+    })
+};
