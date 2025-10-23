@@ -1,0 +1,63 @@
+/**
+ * @param {number[][]} board
+ * @return {number}
+ */
+var maximumValueSum = function(board) {
+    const R = board.length, C = board[0].length, size = 3
+    function row2tops(row) {
+        let maxA = -Infinity, maxB = -Infinity, maxC = -Infinity,
+            maxAIndex = -1, maxBIndex = -1, maxCIndex = -1
+        for (const [i, val] of row.entries()) {
+            if (val > maxA) {
+                maxC = maxB
+                maxCIndex = maxBIndex
+                maxB = maxA
+                maxBIndex = maxAIndex
+                maxA = val
+                maxAIndex = i
+            } else if (val > maxB) {
+                maxC = maxB
+                maxCIndex = maxBIndex
+                maxB = val
+                maxBIndex = i
+            } else if (val > maxC) {
+                maxC = val
+                maxCIndex = i
+            }
+        }
+
+        return [maxAIndex, maxBIndex, maxCIndex]
+    }
+    const table = board.map(row2tops)
+
+
+    let result = -Infinity
+    for (let i = 0; i < R; i++) {
+        const rowA = table[i]
+        for (let j = 1 + i; j < R; j++) {
+            const rowB = table[j]
+            for (let k = 1 + j; k < R; k++) {
+                const rowC = table[k]
+
+                for (let I = 0; I < size; I++) {
+                    const valA = board[i][rowA[I]]
+                    for (let J = 0; J < size; J++) {
+                        if (rowB[J] === rowA[I])    continue
+                        const valB = board[j][rowB[J]]
+                        for (let K = 0; K < size; K++) {
+                            if (rowC[K] === rowA[I] || rowC[K] === rowB[J])
+                                continue
+                            const valC = board[k][rowC[K]]
+
+                            const outcome = valA + valB + valC
+                            result = Math.max(result, outcome)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    return result
+};
