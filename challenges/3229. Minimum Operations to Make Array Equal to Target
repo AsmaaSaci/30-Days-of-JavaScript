@@ -1,0 +1,14 @@
+var minimumOperations = function (nums, target) {
+    let ans = 0, prevDiff = 0;
+
+    nums.forEach((num, i) => {
+        let diff = target[i] - num;
+
+        if (diff * prevDiff < 0) prevDiff = 0; // Reset if signs change
+
+        ans += Math.max(0, Math.abs(diff) - Math.abs(prevDiff));
+        prevDiff = diff; // Update prevDiff to current diff
+    });
+
+    return ans;
+};
