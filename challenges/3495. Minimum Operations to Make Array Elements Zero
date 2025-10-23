@@ -1,0 +1,27 @@
+let minOperations = function (queries) {
+    let operations = 0;
+
+    for (let i = 0; i < queries.length; i++) {
+        let [l, r] = queries[i];
+        let total = prefixOps(r) - prefixOps(l - 1);
+        operations += Math.floor((total + 1) / 2);
+    }
+
+    return operations;
+}
+
+const prefixOps = function (n) {
+    if (n <= 0) return 0;
+
+    let total = 0, blockSize = 1, divisions = 1;
+
+    while (n > 0) {
+        let take = Math.min(n, blockSize * 3);
+        total += take * divisions;
+        n -= take;
+        blockSize *= 4;
+        divisions++;
+    }
+
+    return total;
+}
