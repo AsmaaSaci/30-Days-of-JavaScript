@@ -1,0 +1,40 @@
+var countMatchingSubarrays = function (nums, pattern) {
+    let n = nums.length, m = pattern.length;
+    let relation = Array(n).fill(0);
+    for (let i = 1; i < n; i++) {
+        if (nums[i - 1] < nums[i]) relation[i] = 1;
+        else if (nums[i - 1] === nums[i]) relation[i] = 0;
+        else relation[i] = -1;
+    }
+    relation = relation.slice(1);
+    return kmp(relation, pattern).length;
+};
+
+function kmp(str, substr) {
+    let lps = getLPS(substr);
+    let n = str.length, m = substr.length;
+    let i = 0, j = 0;
+    let matches = [];
+    while (j < n) {
+        if (str[j] === substr[i]) {
+            i++, j++;
+            if (i === m) matches.push(j - m);
+        } else if (i > 0) {
+            i = lps[i - 1];
+        } else j++;
+    }
+    return matches;
+}
+
+function getLPS(str) {
+    let n = str.length, lps = Array(n).fill(0);
+    let i = 0, j = 1;
+    while (j < n) {
+        if (str[i] === str[j]) {
+            lps[j++] = ++i;
+        } else if (i > 0) {
+            i = lps[i - 1];
+        } else j++;
+    }
+    return lps;
+}
