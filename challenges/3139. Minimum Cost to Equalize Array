@@ -1,0 +1,36 @@
+/**
+ * @param {number[]} nums
+ * @param {number} cost1
+ * @param {number} cost2
+ * @return {number}
+ */
+var minCostToEqualizeArray = function(nums, cost1, cost2) {
+    const MOD = 1e9 + 7;
+    let min = nums[0], max = nums[0], sum = 0;
+    for (const num of nums) {
+        min = Math.min(min, num);
+        max = Math.max(max, num);
+        sum += num;
+    }
+    let delta = max * nums.length - sum;
+    if (cost1 * 2 <= cost2 || nums.length <= 2) {
+        return (delta * cost1) % MOD;
+    }
+    // use cost2 as much as possible, then cost1 to fill the gap
+    // to increase all elements to max
+    let op1 = Math.max(0, (max - min) * 2 - delta);
+    let op2 = delta - op1;
+    let result = (op1 + op2 % 2) * cost1 + Math.floor(op2 / 2) * cost2;
+    // use cost2 as much as possible, then cost1 to fill the gap
+    // but to increase all elements to (max + ?)
+    delta += Math.floor(op1 / (nums.length - 2)) * nums.length;
+    op1 %= nums.length - 2;
+    op2 = delta - op1;
+    result = Math.min(result, (op1 + op2 % 2) * cost1 + Math.floor(op2 / 2) * cost2);
+    // don't use cost1
+    for (let i = 0; i < 2; i++) {
+        delta += nums.length;
+        result = Math.min(result, (delta % 2) * cost1 + Math.floor(delta / 2) * cost2);
+    }
+    return result % MOD;
+};
