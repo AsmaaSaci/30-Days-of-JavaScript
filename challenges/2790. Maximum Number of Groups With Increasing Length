@@ -1,0 +1,41 @@
+/**
+ * @param {number[]} usageLimits
+ * @return {number}
+ */
+var maxIncreasingGroups = function(usageLimits) {
+    usageLimits = new Uint32Array(usageLimits);
+    usageLimits.sort();
+
+    let l = 0, r = usageLimits.length+1;
+    while(l < r) {
+        let mid = (l+r)>>>1;
+
+        if(checkPossible(usageLimits, mid)) {
+            l = mid + 1;
+        } else {
+            r = mid;
+        }
+    }
+
+    return l-1;
+};
+
+function checkPossible(arr, n) {
+    let c = 0
+
+    let groupSize = 1;
+    
+    for(let i = 0; i < arr.length && groupSize <= n; ++i) {
+        let diff = c+arr[i]-(groupSize);
+        if(diff < 0) {
+            //this person doesn't have enough appearences...
+            //we can still carry them though, to be used later.
+            c += arr[i];
+        } else {
+            c = diff;
+            ++groupSize;
+        }
+    }
+
+    return groupSize===(n+1);
+}
