@@ -1,0 +1,30 @@
+const MOD = 1e9 + 7;
+
+var countOfPairs = function(nums) {
+    const n = nums.length;
+    let prev = new Array(1000).fill(0);
+
+    // Initialize for the last element in nums
+    for (let j = 0; j <= nums[n-1]; j++) {
+        prev[j] = 1;
+    }
+
+    // Process the array backwards
+    for (let i = n - 2; i >= 0; i--) {
+        let start = Math.max(0, nums[i + 1] - nums[i]);
+        const cur = new Array(1000).fill(0);
+        let acu = 0;
+
+        for (let j = nums[i + 1]; j >= start; j--) {
+            acu += prev[j];
+            acu = acu % MOD;
+            cur[j - start] = acu;
+        }
+
+        prev = cur;
+    }
+
+    // Sum up all possibilities
+    const rtn = prev.reduce((acu, cur) => (acu + cur) % MOD, 0);
+    return rtn;
+};
