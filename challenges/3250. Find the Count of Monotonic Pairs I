@@ -1,0 +1,28 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var countOfPairs = function(nums) {
+    const n = nums.length;
+    const mod = 1000000007;
+    const dp = new Array(n).fill(0).map(()=>new Array(51).fill(0));
+    for(let num = 0; num<=nums[0]; num++) {
+        dp[0][num] = 1;
+    }
+    for(let i = 1;i <nums.length; i++) {
+        for(let sum = 0; sum<=nums[i]; sum++) {
+            // loop valid arr1 value: pre <= sum
+            for(pre = 0; pre<=sum; pre++) {
+                if(nums[i-1] - pre >= nums[i]-sum) {
+                    dp[i][sum] = (dp[i][sum] + dp[i-1][pre]) % mod;
+                }
+            }
+        }
+    }
+    let ans = 0;
+    for(const num of dp[n-1]) {
+        ans  = (ans + num ) % mod;
+    }
+   
+    return ans;
+};
