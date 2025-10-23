@@ -1,0 +1,38 @@
+/**
+ * @param {number[]} array
+ * @param {number} maxCost
+ * @return {number}
+ */
+function countNonDecreasingSubarrays(array, maxCost) {
+  const n = array.length;
+  array = array.reverse();
+
+  let totalSubarrays = 0;
+  const deque = []; // Stores indices of elements
+  let left = 0;
+
+  for (let right = 0; right < array.length; ++right) {
+    // Maintain a decreasing deque
+    while (deque.length > 0 && array[deque[deque.length - 1]] < array[right]) {
+      const lastIndex = deque.pop();
+      const previousIndex = deque.length === 0 ? left - 1 : deque[deque.length - 1];
+      maxCost -= (lastIndex - previousIndex) * (array[right] - array[lastIndex]);
+    }
+
+    deque.push(right);
+
+    // Adjust the window size if maxCost is negative
+    while (maxCost < 0) {
+      maxCost += array[deque[0]] - array[left];
+      if (deque[0] === left) {
+        deque.shift();
+      }
+      ++left;
+    }
+
+    // Add the count of subarrays ending at the current position
+    totalSubarrays += right - left + 1;
+  }
+
+  return totalSubarrays;
+}
