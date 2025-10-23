@@ -1,0 +1,74 @@
+function longestSpecialPath(edges, nums) {
+    const n = nums.length;
+
+    const ctx = {
+        n,
+        nums,
+        adj: Array.from({ length: n }, () => []),
+        dist: new Array(n).fill(0),
+        lastOccur: [],
+        pathStack: [],
+        minIndex: 0,
+        maxLen: 0,
+        minNodesForMaxLen: Infinity
+    };
+
+    for (const [u, v, w] of edges) {
+        ctx.adj[u].push([v, w]);
+        ctx.adj[v].push([u, w]);
+    }
+
+    buildDist(ctx, 0, -1, 0);
+
+    const maxVal = Math.max(...nums);
+    ctx.lastOccur = new Array(maxVal + 1).fill(-1);
+
+    dfs(ctx, 0, -1);
+
+    return [ctx.maxLen, ctx.minNodesForMaxLen];
+}
+
+function buildDist(ctx, u, parent, currDist) {
+    ctx.dist[u] = currDist;
+    for (const [v, w] of ctx.adj[u]) {
+        if (v === parent) continue;
+        buildDist(ctx, v, u, currDist + w);
+    }
+}
+
+function dfs(ctx, u, parent) {
+    const stackPos = ctx.pathStack.length;
+    ctx.pathStack.push(u);
+
+    const val = ctx.nums[u];
+    const oldPos = ctx.lastOccur[val];
+    const oldMinIndex = ctx.minIndex;
+
+    ctx.lastOccur[val] = stackPos;
+
+    if (oldPos >= ctx.minIndex) {
+        ctx.minIndex = oldPos + 1;
+    }
+
+    if (ctx.minIndex <= stackPos) {
+        const ancestor = ctx.pathStack[ctx.minIndex];
+        const pathLength = ctx.dist[u] - ctx.dist[ancestor];
+        const pathNodes = stackPos - ctx.minIndex + 1;
+
+        if (pathLength > ctx.maxLen) {
+            ctx.maxLen = pathLength;
+            ctx.minNodesForMaxLen = pathNodes;
+        } else if (pathLength === ctx.maxLen && pathNodes < ctx.minNodesForMaxLen) {
+            ctx.minNodesForMaxLen = pathNodes;
+        }
+    }
+
+    for (const [v, w] of ctx.adj[u]) {
+        if (v === parent) continue;
+        dfs(ctx, v, u);
+    }
+
+    ctx.pathStack.pop();
+    ctx.lastOccur[val] = oldPos;
+    ctx.minIndex = oldMinIndex;
+}
