@@ -1,0 +1,51 @@
+/**
+ * @param {number} n
+ * @param {number[][]} edges
+ * @param {number[]} score
+ * @return {number}
+ */
+
+var maxProfit = function(n, edges, score) {
+    if(edges.length === 0) {
+        let sum = 0;
+        score.sort((a,b) => a-b);
+        for(let i=0; i<score.length; i++) {
+            sum += (i+1)*score[i];
+        }
+        return sum;
+    }
+    const graph = {};
+    const queue = [];
+    const indegree = new Array(n).fill(n).fill(0);
+    for(const [u,v] of edges) {
+        if(!graph[u]) graph[u] = [];
+        graph[u].push(v);
+        indegree[v]++;
+    }
+    for(let i=0; i<indegree.length; i++) {
+        if(indegree[i] === 0) queue.push(i);
+    }
+    
+    const memo = {};
+    const calc = (q, ind, f) => {
+        const key = q + '-' + f;
+        if(memo[key]) return memo[key];
+        if(q.length === 0) return 0;
+
+        let max = 0;
+        for(let i=0; i<q.length; i++) {
+            const cq = [...q];
+            const nin = [...ind]
+            const val = q[i];
+            cq.splice(i, 1);
+            const ch = graph[val] || [];
+            for(const nch of ch) {
+                nin[nch]--;
+                if(nin[nch] === 0) cq.push(nch);
+            }
+            max = Math.max(max, f*score[val] + calc(cq, nin, f+1));
+        }
+        return memo[key] = max;
+    }
+    return calc(queue, indegree, 1);
+};
