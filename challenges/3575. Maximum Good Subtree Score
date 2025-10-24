@@ -1,0 +1,62 @@
+const MOD = 1e9 + 7;
+const MAXN = 1 << 10;
+/**
+ * @param {number[]} vals
+ * @param {number[]} par
+ * @return {number}
+ */
+var goodSubtreeSum = function(vals, par) {
+    const n = vals.length;
+    const dp = Array.from(vals, () => new Array(MAXN).fill(-1));
+    const adj = constructGraph(vals, par);
+    dfs(dp, adj, vals, 0);
+    let result = 0;
+    for (let i = 0; i < n; i++) {
+        const maxScore = Math.max(0, ...dp[i].filter((v) => v !== -1));
+        result = (result + maxScore) % MOD;
+    }
+    return result;
+};
+
+function constructGraph(vals, par) {
+    const n = vals.length;
+    const adj = Array.from(vals, () => []);
+    for (let i = 1; i < n; i++) {
+        adj[par[i]].push(i);
+    }
+    return adj;
+}
+
+function dfs(dp, adj, vals, node) {
+    const cmask = getMask(vals[node]);
+    if (cmask !== -1) {
+        dp[node][cmask] = vals[node];
+    }
+    if (adj[node].length === 0) return;
+    for (const child of adj[node]) {
+        dfs(dp, adj, vals, child);
+        for (let i = 1; i < MAXN; i++) {
+            if (dp[node][i] === -1) {
+                dp[node][i] = dp[child][i];
+                continue;
+            }
+            dp[node][i] = Math.max(dp[node][i], dp[child][i]);
+            for (let j = 1; j < MAXN; j++) {
+                if (dp[child][j] === -1) continue;
+                if ((i & j) !== 0) continue;
+                dp[node][i | j] = Math.max(dp[node][i | j], dp[node][i] + dp[child][j]);
+            }
+        }
+    }
+}
+
+function getMask(num) {
+    let mask = 0;
+    while (num > 0) {
+        const d = 1 << (num % 10);
+        if ((mask & d) !== 0) return -1;
+        mask |= d;
+        num = Math.floor(num / 10);
+    }
+    return mask;
+}
