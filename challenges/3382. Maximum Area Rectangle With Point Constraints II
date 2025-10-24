@@ -1,0 +1,51 @@
+var maxRectangleArea = function(xCoord, yCoord) {
+    const n = xCoord.length;
+    const pts = new Array(n);
+    for (let i = 0; i < n; i++) pts[i] = [xCoord[i], yCoord[i]];
+    pts.sort((a,b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+    const ys = Array.from(new Set(yCoord)).sort((a,b)=>a-b);
+    const yToIndex = new Map();
+    for (let i = 0; i < ys.length; i++) yToIndex.set(ys[i], i);
+    class SegTree {
+        constructor(size) { this.n = size; this.tree = new Array(4*size).fill(-1); }
+        update(i, val){ this._upd(0,0,this.n-1,i,val); }
+        _upd(node,l,r,i,val){
+            if(l===r){ this.tree[node]=val; return; }
+            const m=(l+r)>>1;
+            if(i<=m) this._upd(node*2+1,l,m,i,val); else this._upd(node*2+2,m+1,r,i,val);
+            this.tree[node]= this.tree[node*2+1] > this.tree[node*2+2] ? this.tree[node*2+1] : this.tree[node*2+2];
+        }
+        query(i,j){ if(i>j) return -1; return this._qry(0,0,this.n-1,i,j); }
+        _qry(node,l,r,i,j){
+            if(i<=l && r<=j) return this.tree[node];
+            if(j<l || r<i) return -1;
+            const m=(l+r)>>1;
+            const L=this._qry(node*2+1,l,m,i,j);
+            const R=this._qry(node*2+2,m+1,r,i,j);
+            return L>R?L:R;
+        }
+    }
+    const seg = new SegTree(ys.length);
+    const yToX = new Map();
+    let ans = -1;
+    let prevX = pts[0][0], prevY = pts[0][1];
+    for (let k = 1; k < n; k++) {
+        const [x,y] = pts[k];
+        if (yToX.has(prevY) && yToX.has(y)) {
+            const xLeft = yToX.get(y);
+            if (prevX === x && yToX.get(prevY) === xLeft) {
+                const idxLo = yToIndex.get(prevY) + 1;
+                const idxHi = yToIndex.get(y) - 1;
+                if (xLeft > seg.query(idxLo, idxHi)) {
+                    const area = (y - prevY) * (x - xLeft);
+                    if (area > ans) ans = area;
+                }
+            }
+        }
+        yToX.set(prevY, prevX);
+        seg.update(yToIndex.get(prevY), prevX);
+        prevX = x;
+        prevY = y;
+    }
+    return ans;
+};
