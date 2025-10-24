@@ -1,0 +1,36 @@
+/**
+ * @param {number[]} A
+ * @param {number} k
+ * @return {number}
+ */
+function maxGCDScore(A, k) {
+    const n = A.length;
+    let res = 0;
+
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+    for (let i = 0; i < n; i++) {
+        let a = A[i];
+        let count = 0;
+        let minPow = Infinity;
+
+        for (let j = i; j < n; j++) {
+            a = gcd(a, A[j]);
+            const low = A[j] & -A[j]; // lowest power of two in A[j]
+
+            if (minPow > low) {
+                minPow = low;
+                count = 0;
+            }
+
+            if (minPow === low) {
+                count++;
+            }
+
+            const cur = a * (count <= k ? 2 : 1) * (j - i + 1);
+            res = Math.max(res, cur);
+        }
+    }
+
+    return res;
+}
