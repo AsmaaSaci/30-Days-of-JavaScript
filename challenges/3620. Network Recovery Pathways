@@ -1,0 +1,121 @@
+/**
+ * @param {number[][]} edges
+ * @param {boolean[]} online
+ * @param {number} k
+ * @return {number}
+ */
+var findMaxPathScore = function(edges, online, k) {
+    const n = online.length;
+    // console.log(n);
+
+    // Using let for variables that will be shared across the helper functions via closure.
+    let adj_list;
+    let in_degree;
+    let max_edge_length;
+    let topo_sort;
+
+    // We use function declarations for hoisting, which allows a structure similar to Python's `def`,
+    // where functions can be defined together and called later, using variables from the outer scope.
+
+    function create_adj_list() {
+        const in_degree_original = new Array(n).fill(0);
+        let max_len = 0;
+        const adj = Array.from({ length: n }, () => []);
+
+        for (const [u, v, cost] of edges) {
+            if (online[u] && online[v]) {
+                in_degree_original[v] += 1;
+                max_len = Math.max(max_len, cost);
+                adj[u].push([v, cost]);
+            }
+        }
+        
+        // In JS, a function can return an array to be destructured, similar to Python's tuple return.
+        return [adj, in_degree_original, max_len];
+    }
+
+    function find_toposort_order() {
+        const dq = []; // Use an array as a queue.
+        const local_topo_sort = [];
+
+        // This function modifies the `in_degree` array from the outer scope,
+        // which mimics the behavior of the original Python code.
+        for (let node = 0; node < n; node++) {
+            if (in_degree[node] === 0) {
+                dq.push(node);
+            }
+        }
+
+        while (dq.length > 0) {
+            const node = dq.shift(); // Dequeue from the front.
+            local_topo_sort.push(node);
+
+            for (const [adj, cost] of adj_list[node]) {
+                in_degree[adj] -= 1;
+                if (in_degree[adj] === 0) {
+                    dq.push(adj);
+                }
+            }
+        }
+
+        return local_topo_sort;
+    }
+
+    function check_feasibility_with_wt(min_edge_wt) {
+        const distances = new Array(n).fill(Infinity);
+        distances[0] = 0;
+
+        for (const node of topo_sort) {
+            for (const [adj, cost] of adj_list[node]) {
+                // Skip if cost is less than the required minimum edge weight.
+                if (cost < min_edge_wt) {
+                    continue;
+                }
+                
+                // If a path to the current node exists and the new path is within budget.
+                if (distances[node] + cost <= k) {
+                    distances[adj] = Math.min(distances[adj], distances[node] + cost);
+                }
+            }
+        }
+
+        // Check if the last node is reachable within the cost 'k'.
+        if (distances[n - 1] <= k) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function binary_search(max_edge_length_param) {
+        let low = 0;
+        let high = Math.min(k, max_edge_length_param);
+
+        while (low <= high) {
+            // Standard binary search calculation for mid-point.
+            const mid = low + Math.floor((high - low) / 2);
+
+            if (check_feasibility_with_wt(mid) === true) {
+                // If a path is feasible with `mid`, try for a higher minimum weight.
+                low = mid + 1;
+            } else {
+                // If not feasible, the minimum weight is too high, so reduce it.
+                high = mid - 1;
+            }
+        }
+        
+        // The answer is the last `mid` for which `check_feasibility` was true.
+        // This binary search template correctly finds it as `low - 1` or `high`.
+        return low - 1;
+    }
+
+    if (edges.length === 0) {
+        return -1;
+    }
+    
+    // Main execution logic, mirroring the Python script's flow.
+    [adj_list, in_degree, max_edge_length] = create_adj_list();
+    topo_sort = find_toposort_order();
+    const ans = binary_search(max_edge_length);
+    return ans;
+};
