@@ -1,0 +1,25 @@
+/**
+ * @param {number[]} nums
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var maximumSubarrayXor = function(nums, queries) {
+    let n = nums.length;
+    let xor = [...Array(n)].map(() => Array(n).fill(0));
+    let score = [...Array(n)].map(() => Array(n).fill(0));
+    for(let i = 0; i < n; ++i){
+        xor[i][i] = nums[i];
+        score[i][i] = nums[i];
+    }
+    for(let d = 1; d < n; ++d){
+        for(let i = 0; i < n - d; ++i){
+            let j = i+d;
+            xor[i][j] = xor[i][j-1]^xor[i+1][j];
+            score[i][j] = Math.max(score[i][j-1], score[i+1][j], xor[i][j]);
+        }
+    }
+    let res = [];
+    queries.map(([l,r], i) => res.push(score[l][r]));
+    return res;
+    
+};
