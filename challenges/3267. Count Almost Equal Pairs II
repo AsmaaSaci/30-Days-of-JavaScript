@@ -1,0 +1,45 @@
+function countPairs(nums: number[]): number {
+    let count = 0;
+    const seen = new Map<string, number>();
+
+    for (const num of nums) {
+        const variations = generateVariations(num);
+        for (const variation of variations) {
+            count += seen.get(variation) || 0;
+        }
+        const key = num.toString().padStart(7, '0');
+        seen.set(key, (seen.get(key) || 0) + 1);
+    }
+
+    return count;
+}
+
+function generateVariations(num: number): Set<string> {
+    const str = num.toString().padStart(7, '0');
+    const variations = new Set<string>([str]);
+
+    for (let i = 0; i < str.length; i++) {
+        for (let j = i + 1; j < str.length; j++) {
+            variations.add(swap(str, i, j));
+        }
+    }
+
+    for (let i = 0; i < str.length; i++) {
+        for (let j = i + 1; j < str.length; j++) {
+            const swapped = swap(str, i, j);
+            for (let k = 0; k < str.length; k++) {
+                for (let l = k + 1; l < str.length; l++) {
+                    variations.add(swap(swapped, k, l));
+                }
+            }
+        }
+    }
+
+    return variations;
+}
+
+function swap(str: string, i: number, j: number): string {
+    const arr = str.split('');
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    return arr.join('');
+}
