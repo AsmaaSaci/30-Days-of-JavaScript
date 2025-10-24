@@ -1,0 +1,62 @@
+/**
+ * @param {number[][]} grid
+ * @return {number}
+ */
+var maxScore = function(grid) {
+    const R = grid.length
+    // delete duplicates from rows
+    grid = grid.map(row => [...new Set(row)])
+
+    // sort each row
+    const cmp = (a, b) => b - a
+    for (const row of grid)
+        row.sort(cmp)
+    // sort rows by their max element, desc
+    grid.sort((A, B) => B[0] - A[0])
+    
+    // used to cut off branches
+    const sumFT = new Array(1 + R)
+    sumFT[R] = 0
+    for (let i = R - 1; i > -1; i--)
+        sumFT[i] = grid[i][0] + sumFT[i + 1]
+    
+    // fromI: row index so far
+    // sumSF: accumulated sum so far
+    let fromI = 0, sumSF = 0
+    // overall (outside the dfs() function) best result so far
+    let overall = 0
+    // used as a map to keep track of which values have been taken
+    const taken = new Array(101).fill(false)
+    function dfs() {
+        if (fromI === R) { // reached the bottom of grid
+            overall = Math.max(overall, sumSF)
+        } else if (sumSF + sumFT[fromI] > overall) { // worth going on
+            const row = grid[fromI]
+            // try taking an element from current row
+            for (const [j, val] of row.entries()) {
+                if (!taken[val]) {
+                    // advance and backtrack
+                    taken[val] = true
+                    sumSF += val
+                    fromI++
+
+                    dfs()
+
+                    taken[val] = false
+                    sumSF -= val
+                    fromI--
+                }
+            }
+
+            // dont take anything from current row
+            // advance and backtrack
+            fromI++
+            dfs()
+            fromI--
+        }
+    }
+    dfs()
+
+
+    return overall
+};
