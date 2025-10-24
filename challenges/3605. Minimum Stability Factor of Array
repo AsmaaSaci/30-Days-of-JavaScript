@@ -1,0 +1,112 @@
+/**
+ * Computes the floor of log2(x).
+ */
+function floorLog2(x) {
+  return Math.floor(Math.log2(x));
+}
+
+/**
+ * Builds a sparse table from nums for GCD queries.
+ * @param {number[]} nums
+ * @returns {{ st: number[][], log2: number[] }}
+ */
+function buildSparseTable(nums) {
+  const n = nums.length;
+  const maxLog = floorLog2(n) + 1;
+
+  // Precompute log2 values for O(1) queries later
+  const log2 = Array(n + 1).fill(0);
+  for (let i = 2; i <= n; i++) {
+    log2[i] = log2[Math.floor(i / 2)] + 1;
+  }
+
+  // Initialize sparse table: st[k][i] = GCD of range [i, i + 2^k - 1]
+  const st = Array.from({ length: maxLog }, () => Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    st[0][i] = nums[i];
+  }
+
+  for (let k = 1; k < maxLog; k++) {
+    for (let i = 0; i + (1 << k) <= n; i++) {
+      st[k][i] = gcd(st[k - 1][i], st[k - 1][i + (1 << (k - 1))]);
+    }
+  }
+
+  return { st, log2 };
+}
+
+/**
+ * Answers GCD query over the range [l, r] inclusive using sparse table.
+ * @param {number} l
+ * @param {number} r
+ * @param {{ st: number[][], log2: number[] }} tableObj
+ */
+function rangeGcdQuery(l, r, tableObj) {
+  const { st, log2 } = tableObj;
+  const len = r - l + 1;
+  const k = log2[len];
+  return gcd(st[k][l], st[k][r - (1 << k) + 1]);
+}
+
+/**
+ * Applies the original minStable logic using the sparse table for GCDs.
+ * @param {number[]} nums
+ * @param {number} maxC
+ * @returns {number}
+ */
+function minStable(nums, maxC) {
+  const n = nums.length;
+  const tableObj = buildSparseTable(nums);
+
+  const leftStable = new Array(n).fill(0);
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    while (j < i && rangeGcdQuery(j, i, tableObj) === 1) {
+      j++;
+    }
+    leftStable[i] = j;
+  }
+
+  let l = 0, r = n;
+  while (l < r) {
+    const m = Math.floor((l + r) / 2);
+    let cnt = 0;
+    let g = 0;
+    j = 0;
+
+    for (let i = 0; i < n; i++) {
+      g = g === 0 ? nums[i] : gcd(g, nums[i]);
+      if (g === 1) {
+        j = Math.max(j, leftStable[i]);
+        g = rangeGcdQuery(j, i, tableObj);
+      }
+
+      if (i - j >= m) {
+        cnt += (g > 1 ? 1 : 0);
+        g = 0;
+        j = i + 1;
+      }
+    }
+
+    if (cnt <= maxC) {
+      r = m;
+    } else {
+      l = m + 1;
+    }
+  }
+
+  return l;
+}
+
+/**
+ * Standard Euclidean algorithm to compute GCD of two numbers.
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+function gcd(a, b) {
+  while (b !== 0) {
+    [a, b] = [b, a % b];
+  }
+  return a;
+}
