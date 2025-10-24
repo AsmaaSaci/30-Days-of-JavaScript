@@ -1,0 +1,27 @@
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var sumOfGoodSubsequences = function (nums) {
+  let ans = 0;
+  const MOD = 10 ** 9 + 7;
+  const countMap = new Map();
+  const totalMap = new Map();
+
+  for (const num of nums) {
+    const decCount = countMap.get(num - 1) ?? 0;
+    const incCount = countMap.get(num + 1) ?? 0;
+    const count = (decCount + incCount + 1) % MOD;
+
+    const curr = (num * count) % MOD;
+    const decTotal = totalMap.get(num - 1) ?? 0;
+    const incTotal = totalMap.get(num + 1) ?? 0;
+    const total = (curr + decTotal + incTotal) % MOD;
+
+    ans = (ans + total) % MOD;
+    countMap.set(num, (countMap.get(num) ?? 0) + count);
+    totalMap.set(num, (totalMap.get(num) ?? 0) + total);
+  }
+
+  return ans;
+};
