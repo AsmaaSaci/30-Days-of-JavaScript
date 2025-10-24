@@ -1,0 +1,56 @@
+var minimumCost = function(nums, cost, k) {
+    const n = nums.length;
+    const Pn = Array(n+1).fill(0);
+    const Pc = Array(n+1).fill(0);
+    for (let i=0;i<n;i++){ Pn[i+1]=Pn[i]+nums[i]; Pc[i+1]=Pc[i]+cost[i]; }
+    const INF = 1/0;
+    let dpPrev = Array(n+1).fill(INF);
+    dpPrev[0]=0;
+    let answer = INF;
+    for (let s=1;s<=n;s++){
+        const lines = [];
+        const xs = [];
+        let ptr = 0;
+        const addLine = (m,b)=>{
+            if (!isFinite(b)) return;
+            const L = lines;
+            while(L.length>0 && L[L.length-1].m === m){
+                if (b >= L[L.length-1].b) return;
+                L.pop(); xs.pop();
+            }
+            while(L.length>=2){
+                const m1 = L[L.length-2].m, b1 = L[L.length-2].b;
+                const m2 = L[L.length-1].m, b2 = L[L.length-1].b;
+                const inter1 = (b2-b1)/(m1-m2);
+                const inter2 = (b - b2)/(m2-m);
+                if (inter2 <= inter1){ L.pop(); xs.pop(); } else break;
+            }
+            if (L.length===0) xs.push(-INF); else {
+                const last = L[L.length-1];
+                xs.push((last.b - b)/(m - last.m));
+            }
+            L.push({m,b});
+        };
+        const query = (x)=>{
+            if (lines.length===0) return INF;
+            while(ptr+1<lines.length && xs[ptr+1] <= x) ptr++;
+            const L = lines[ptr];
+            return L.m * x + L.b;
+        };
+        for (let j=0;j<=n-1;j++){
+            if (dpPrev[j]===INF) continue;
+            addLine(-Pc[j], dpPrev[j]);
+        }
+        const dpCurr = Array(n+1).fill(INF);
+        dpCurr[0]=INF;
+        for (let i=1;i<=n;i++){
+            const A = Pn[i] + k * s;
+            const base = Pn[i]*Pc[i] + k * s * Pc[i];
+            const best = query(A);
+            if (best !== INF) dpCurr[i] = base + best;
+        }
+        if (dpCurr[n] < answer) answer = dpCurr[n];
+        dpPrev = dpCurr;
+    }
+    return answer;
+};
