@@ -1,0 +1,107 @@
+
+    const M = 1000000007n;
+    function power(x, n) {
+        let res = 1n;
+        x = BigInt(x) % BigInt(M);
+        n = BigInt(n);
+
+        while (n > 0n) {
+            if (n & 1n) {
+                res = (res * x) % BigInt(M);
+            }
+            x = (x * x) % BigInt(M);
+            n >>= 1n;
+        }
+        return res;
+    }
+
+    function dfs(cur, par, depth, dist, dp, adj) {
+        depth[cur] = 1 + (par === -1 ? 0 : depth[par]);
+        if (par !== -1) {
+            dp[cur][0] = par; // The first ancestor (2^0) is the immediate parent
+        }
+        for (let j = 1; j < 21; j++) {
+            dp[cur][j] = dp[dp[cur][j - 1]][j - 1];
+        }
+
+        for (const it of adj[cur]) {
+            if (it !== par) {
+                dist[it] = dist[cur] + 1;
+                dfs(it, cur, depth, dist, dp, adj);
+            }
+        }
+    }
+
+    function find_lca(x, y, depth, dp) {
+        let da = depth[x];
+        let db = depth[y];
+
+        if (da > db) {
+            [x, y] = [y, x]; // Swap x and y
+            [da, db] = [db, da]; // Swap their depths as well
+        }
+
+        // Lift y up to the same depth as x
+        let diff = db - da; // This is (db - da), no need for Math.abs if swapped
+        for (let i = 0; i < 21 && diff > 0; i++) {
+            if (diff & (1 << i)) {
+                y = dp[y][i];
+            }
+        }
+
+        if (x === y) {
+            return x;
+        }
+
+        // Lift x and y simultaneously until their parents are the same
+        for (let i = 20; i >= 0; i--) {
+            if (dp[x][i] !== dp[y][i]) {
+                x = dp[x][i];
+                y = dp[y][i];
+            }
+        }
+        // At this point, dp[x][0] (which is also dp[y][0]) is the LCA
+        return dp[x][0];
+    }
+
+    function find_distance(x, y, depth, dist, dp) {
+        const lca = find_lca(x, y, depth, dp);
+        return dist[x] + dist[y] - 2 * dist[lca];
+    }
+
+    function assignEdgeWeights(e, q) {
+        const n = e.length + 1; // Number of nodes (assuming 1-indexed nodes from 1 to n)
+
+        // Initialize adjacency list
+        const adj = Array.from({
+            length: n + 1
+        }, () => []);
+        for (const edge of e) {
+            const u = edge[0];
+            const v = edge[1];
+            adj[u].push(v);
+            adj[v].push(u);
+        }
+
+        // Initialize depth, distance from root, and DP table for LCA
+        const depth = new Array(n + 1).fill(0);
+        const dist = new Array(n + 1).fill(0);
+        const dp = Array.from({
+            length: n + 1
+        }, () => new Array(21).fill(0));
+
+        // Perform DFS from root (node 1) to populate depth and DP table
+        dfs(1, -1, depth, dist, dp, adj); // cur, par
+
+        const ans = [];
+        for (let i = 0; i < q.length; i++) {
+            if (q[i][0] === q[i][1]) {
+                ans.push(0);
+            } else {
+                const d = find_distance(q[i][0], q[i][1], depth, dist, dp);
+              
+                ans.push(Number(power(2n, BigInt(d - 1))));
+            }
+        }
+        return ans;
+    }
