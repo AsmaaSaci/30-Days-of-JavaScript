@@ -1,0 +1,65 @@
+/**
+ * @param {number[][]} edges
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var minimumWeight = function(edges, queries) {
+    const n = edges.length + 1;
+    const g = Array.from({ length: n }, () => []);
+    for (const [u, v, w] of edges) {
+        g[u].push([v, w]);
+        g[v].push([u, w]);
+    }
+
+    const LOG = 17; // كفاية لأن n <= 1e5
+    const depth = Array(n).fill(0);
+    const dist = Array(n).fill(0);
+    const up = Array.from({ length: n }, () => Array(LOG).fill(-1));
+
+    const dfs = (u, p) => {
+        for (const [v, w] of g[u]) {
+            if (v === p) continue;
+            depth[v] = depth[u] + 1;
+            dist[v] = dist[u] + w;
+            up[v][0] = u;
+            for (let k = 1; k < LOG; k++) {
+                if (up[v][k - 1] !== -1)
+                    up[v][k] = up[up[v][k - 1]][k - 1];
+            }
+            dfs(v, u);
+        }
+    };
+
+    dfs(0, -1);
+
+    const lca = (a, b) => {
+        if (depth[a] < depth[b]) [a, b] = [b, a];
+        let diff = depth[a] - depth[b];
+        for (let k = 0; k < LOG; k++)
+            if (diff & (1 << k)) a = up[a][k];
+        if (a === b) return a;
+        for (let k = LOG - 1; k >= 0; k--) {
+            if (up[a][k] !== -1 && up[a][k] !== up[b][k]) {
+                a = up[a][k];
+                b = up[b][k];
+            }
+        }
+        return up[a][0];
+    };
+
+    const distance = (a, b) => dist[a] + dist[b] - 2 * dist[lca(a, b)];
+
+    const ans = [];
+    for (const [a, b, c] of queries) {
+        const l1 = lca(a, b);
+        const l2 = lca(b, c);
+        const l3 = lca(a, c);
+        let common = l1;
+        if (depth[l2] > depth[common]) common = l2;
+        if (depth[l3] > depth[common]) common = l3;
+
+        const res = distance(a, common) + distance(b, common) + distance(c, common);
+        ans.push(res);
+    }
+    return ans;
+};
