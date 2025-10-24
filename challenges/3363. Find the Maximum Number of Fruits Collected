@@ -1,0 +1,51 @@
+/**
+ * @param {number[][]} fruits
+ * @return {number}
+ */
+var maxCollectedFruits = function(fruits) {
+    const n   = fruits.length;
+    const NEG = Number.NEGATIVE_INFINITY;
+
+    // 1) we peel off P1’s diagonal
+    let total = 0;
+    for (let k = 0; k < n; k++) {
+        total += fruits[k][k];
+        fruits[k][k] = 0;
+    }
+
+    // 2) One n×n DP table, init to NEG exactly once
+    const dp = Array.from({ length: n }, () => Array(n).fill(NEG));
+
+    // 3) P2 from (n-1,0) to (n-1,n-1), moves →, ↗, ↘
+    dp[n-1][0] = fruits[n-1][0];
+    for (let j = 1; j < n; j++) {
+        // only rows i in [lo…n-1] are reachable in exactly (n-1) steps
+        const lo = Math.max((n-1) - j, j);
+        for (let i = lo; i < n; i++) {
+            let best = dp[i][j-1];
+            if (i > 0)   best = Math.max(best, dp[i-1][j-1]);
+            if (i < n-1) best = Math.max(best, dp[i+1][j-1]);
+            dp[i][j] = best + fruits[i][j];
+            fruits[i][j] = 0;
+        }
+    }
+    const p2score = dp[n-1][n-1];
+
+    // 4) P3 from (0,n-1) to (n-1,n-1), moves ↓, ↙, ↘
+    // We don’t clear dp — we just overwrite the reachable window.
+    dp[0][n-1] = fruits[0][n-1];
+    for (let i = 1; i < n; i++) {
+        // only cols j in [lo…n-1] are reachable
+        const lo = Math.max((n-1) - i, i);
+        for (let j = lo; j < n; j++) {
+            let best = dp[i-1][j];
+            if (j > 0)   best = Math.max(best, dp[i-1][j-1]);
+            if (j < n-1) best = Math.max(best, dp[i-1][j+1]);
+            dp[i][j] = best + fruits[i][j];
+        }
+    }
+    const p3score = dp[n-1][n-1];
+
+    // 5) Sum all three children’s picks
+    return total + p2score + p3score;
+};
