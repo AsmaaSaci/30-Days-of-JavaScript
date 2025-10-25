@@ -1,0 +1,28 @@
+var shoppingOffers = function(price, special, needs) {
+	const getTotalPrice = (need) => {
+		return need.reduce((sum, count, index) => sum + count * price[index], 0);
+	};
+	const isCanUseSpecial = (program, need) => {
+		return need.every((count, index) => count >= program[index]);
+	};
+
+	let result = getTotalPrice(needs);
+	const backtrack = (need = needs, specialIndex = 0, total = 0) => {
+		if (total >= result) return;
+		if (specialIndex >= special.length) {
+			total += getTotalPrice(need);
+			if (total < result) result = total;
+			return;
+		}
+
+		const program = special[specialIndex];
+		if (isCanUseSpecial(program, need)) {
+			const cost = program[program.length - 1];
+			const updatedNeed = need.map((count, index) => count - program[index]);
+			backtrack(updatedNeed, specialIndex, total + cost);
+		}
+		backtrack(need, specialIndex + 1, total);
+	};
+	backtrack();
+	return result;
+};
