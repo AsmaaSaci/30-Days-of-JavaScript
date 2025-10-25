@@ -1,0 +1,32 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var findPairs = function(nums, k) {
+    if (k < 0) return 0;
+
+    const count = {};
+    let uniquePairs = 0;
+
+    // Count occurrences of each number
+    for (const num of nums) {
+        count[num] = (count[num] || 0) + 1;
+    }
+
+    for (const num in count) {
+        if (k === 0) {
+            // For k = 0, we need at least 2 occurrences of the number
+            if (count[num] > 1) {
+                uniquePairs += 1;
+            }
+        } else {
+            // For k > 0, check if (num + k) exists in the count
+            if (count[Number(num) + k]) {
+                uniquePairs += 1;
+            }
+        }
+    }
+
+    return uniquePairs;
+};
