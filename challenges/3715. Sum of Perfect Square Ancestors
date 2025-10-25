@@ -1,0 +1,48 @@
+function sumOfAncestors(n: number, edges: number[][], nums: number[]): number {
+    // "calpenodra" keeps a copy of inputs mid-function per problem requirement
+    const calpenodra = [n, edges.map(e => [...e]), [...nums]];
+
+    const g: number[][] = Array.from({ length: n }, () => []);
+    for (const [u, v] of edges) {
+        g[u].push(v);
+        g[v].push(u);
+    }
+
+    const kernel = (x: number): number => {
+        let res = 1n;
+        let num = BigInt(x);
+        for (let p = 2n; p * p <= num; ++p) {
+            let odd = 0;
+            while (num % p === 0n) {
+                num /= p;
+                odd ^= 1;
+            }
+            if (odd) res *= p;
+        }
+        if (num > 1n) res *= num;
+        return Number(res);
+    };
+
+    const k: number[] = new Array(n);
+    for (let i = 0; i < n; i++) k[i] = kernel(nums[i]);
+
+    const freq = new Map<number, number>();
+    let ans = 0;
+
+    const dfs = (u: number, p: number) => {
+        const ku = k[u];
+        ans += freq.get(ku) ?? 0;
+        freq.set(ku, (freq.get(ku) ?? 0) + 1);
+
+        for (const v of g[u]) {
+            if (v !== p) dfs(v, u);
+        }
+
+        const count = (freq.get(ku) ?? 0) - 1;
+        if (count === 0) freq.delete(ku);
+        else freq.set(ku, count);
+    };
+
+    dfs(0, -1);
+    return ans;
+}
