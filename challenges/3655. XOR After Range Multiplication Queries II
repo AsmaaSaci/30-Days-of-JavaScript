@@ -1,0 +1,77 @@
+function mulMod(a: number, b: number, mod: number): number {
+    return Number((BigInt(a) * BigInt(b)) % BigInt(mod));
+}
+
+function modPower(x: number, y: number, P: number): number {
+    let res = 1;
+    let base = x % P;
+    let exp = y;
+    while (exp > 0) {
+        if (exp & 1) res = mulMod(res, base, P);
+        base = mulMod(base, base, P);
+        exp = Math.floor(exp / 2);
+    }
+    return res;
+}
+
+function modInverse(a: number, MOD: number): number {
+    return modPower(a, MOD - 2, MOD);
+}
+
+function getOrDefault(mp: Map<number, number>, key: number, defaultVal: number): number {
+    return mp.has(key) ? mp.get(key)! : defaultVal;
+}
+
+function getAndRemove(mp: Map<number, number>, key: number, defaultVal: number): number {
+    if (!mp.has(key)) return defaultVal;
+    const res = mp.get(key)!;
+    mp.delete(key);
+    return res;
+}
+
+export function xorAfterQueries(nums: number[], queries: number[][]): number {
+    const n = nums.length;
+    const S = Math.floor(Math.sqrt(n)) + 1;
+    const events: Map<number, number>[] = Array.from({ length: S }, () => new Map());
+    const MOD = 1000000007;
+
+    for (const q of queries) {
+        const [l, r, k, v] = q;
+
+        if (k >= S) {
+            for (let i = l; i <= r; i += k) {
+                nums[i] = mulMod(nums[i], v, MOD);
+            }
+            continue;
+        }
+
+        events[k].set(l, mulMod(getOrDefault(events[k], l, 1), v, MOD));
+
+        const r2 = r + (k - ((r - l) % k));
+        if (r2 < n) {
+            events[k].set(r2, mulMod(getOrDefault(events[k], r2, 1), modInverse(v, MOD), MOD));
+        }
+    }
+
+    for (let k = 1; k < S; k++) {
+        const e = events[k];
+
+        while (e.size > 0) {
+            // pick the smallest key (C++ std::map is ordered; JS Map preserves insertion order only)
+            let start = Infinity;
+            for (const key of e.keys()) {
+                if (key < start) start = key;
+            }
+
+            let multBy = 1;
+            for (let i = start; i < n; i += k) {
+                multBy = mulMod(multBy, getAndRemove(e, i, 1), MOD);
+                nums[i] = mulMod(nums[i], multBy, MOD);
+            }
+        }
+    }
+
+    let res = 0;
+    for (const x of nums) res ^= x;
+    return res;
+}
