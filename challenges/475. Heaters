@@ -1,0 +1,38 @@
+/**
+ * @param {number[]} houses
+ * @param {number[]} heaters
+ * @return {number}
+ */
+var findRadius = function(houses, heaters) {
+
+    houses.sort((a,b)=>a-b);
+    heaters.sort((a,b)=>a-b);
+
+    let max = 0;
+    let curr = 0;
+
+    for (let i = 0; i < houses.length; i++) {
+        while (curr < heaters.length - 1 && 
+               Math.abs(heaters[curr+1] - houses[i]) <= Math.abs(heaters[curr] - houses[i])) {
+            curr++;
+        }
+        max = Math.max(max, Math.abs(heaters[curr] - houses[i]));
+    }
+
+    return max;
+
+
+//  brute force method but this will give tle
+//     let set = new Set(houses);
+//    let j = true;
+//    let x=0;
+//    while(j){
+//     for(let i=0;i<heaters.length;i++){
+//         if(set.has(heaters[i]+x))set.delete(heaters[i]+x);
+//         if(set.has(heaters[i]-x))set.delete(heaters[i]-x);
+//     }
+//     x++;
+//     if(set.size==0)j=false;
+//    }
+//    return x-1;
+};
