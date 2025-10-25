@@ -1,0 +1,34 @@
+var updateBoard = function (board, click) {
+    const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+    const [r, c] = click;
+    const rows = board.length, cols = board[0].length;
+
+    if (board[r][c] === 'M') {
+        board[r][c] = 'X';
+        return board;
+    }
+
+    function countMines(x, y) {
+        let count = 0;
+
+        for (const [dx, dy] of dirs) {
+            const nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && board[nx][ny] === 'M') count++;
+        }
+        return count;
+    }
+
+    function dfs(x, y) {
+        if (x < 0 || x >= rows || y < 0 || y >= cols || board[x][y] !== 'E') return;
+        const mines = countMines(x, y);
+        if (mines > 0) board[x][y] = mines.toString();
+
+        else {
+            board[x][y] = 'B';
+            for (const [dx, dy] of dirs) dfs(x + dx, y + dy);
+        }
+    }
+
+    dfs(r, c);
+    return board;
+}
