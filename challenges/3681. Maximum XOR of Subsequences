@@ -1,0 +1,25 @@
+let maxXorSubsequences = function (nums) {
+    const basis = new Array(32).fill(0);
+
+    for (const num of nums) {
+        let curr = num;
+
+        for (let i = 31; i >= 0; i--) {
+            if ((curr & (1 << i)) === 0) continue;
+            if (basis[i] === 0) {
+                basis[i] = curr;
+                break;
+            }
+
+            curr ^= basis[i];
+        }
+    }
+
+    let ans = 0;
+
+    for (let i = 31; i >= 0; i--) {
+        ans = Math.max(ans, ans ^ basis[i]);
+    }
+
+    return ans;
+}
