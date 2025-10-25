@@ -1,0 +1,29 @@
+let updateMatrix = function (mat) {
+    const m = mat.length;
+    const n = mat[0].length;
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (mat[i][j] > 0) {
+                const up = i > 0 ? mat[i - 1][j] : Infinity;
+                const left = j > 0 ? mat[i][j - 1] : Infinity;
+                mat[i][j] = Math.min(up, left) + 1;
+            }
+        }
+    }
+
+    for (let i = m - 1; i >= 0; i--) {
+        for (let j = n - 1; j >= 0; j--) {
+            if (mat[i][j] > 0) {
+                const down = i < m - 1 ? mat[i + 1][j] : Infinity;
+                const right = j < n - 1 ? mat[i][j + 1] : Infinity;
+                mat[i][j] = Math.min(
+                    mat[i][j],
+                    Math.min(down + 1, right + 1)
+                );
+            }
+        }
+    }
+
+    return mat;
+}
