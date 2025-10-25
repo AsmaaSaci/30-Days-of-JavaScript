@@ -1,0 +1,25 @@
+function countStableSubsequences(nums) {
+    const MOD = 1000000007;
+    let dp1_0 = 0, dp2_0 = 0, dp1_1 = 0, dp2_1 = 0;
+
+    for (const v of nums) {
+        const p = v & 1;
+        let ndp1_0 = dp1_0, ndp2_0 = dp2_0, ndp1_1 = dp1_1, ndp2_1 = dp2_1;
+
+        if (p === 0) {
+            ndp1_0 = (ndp1_0 + 1) % MOD;
+            ndp1_0 = (ndp1_0 + dp1_1 + dp2_1) % MOD;
+            ndp2_0 = (ndp2_0 + dp1_0) % MOD;
+        }
+
+        else {
+            ndp1_1 = (ndp1_1 + 1) % MOD;
+            ndp1_1 = (ndp1_1 + dp1_0 + dp2_0) % MOD;
+            ndp2_1 = (ndp2_1 + dp1_1) % MOD;
+        }
+
+        dp1_0 = ndp1_0; dp2_0 = ndp2_0; dp1_1 = ndp1_1; dp2_1 = ndp2_1;
+    }
+
+    return (dp1_0 + dp2_0 + dp1_1 + dp2_1) % MOD;
+}
