@@ -1,0 +1,19 @@
+let checkSubarraySum = function (nums, k) {
+    let sum = 0;
+    const remainderMap = new Map();
+    remainderMap.set(0, -1);
+
+    for (let i = 0; i < nums.length; i++) {
+        sum += nums[i];
+        const remainder = sum % k;
+        const adjustedRemainder = remainder < 0 ? remainder + k : remainder;
+
+        if (remainderMap.has(adjustedRemainder)) {
+            if (i - remainderMap.get(adjustedRemainder) > 1) return true;
+        }
+
+        else remainderMap.set(adjustedRemainder, i);
+    }
+
+    return false;
+}
