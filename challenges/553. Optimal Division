@@ -1,0 +1,2 @@
+const optimalDivision = (nums) =>
+    nums.length > 2 ? `${nums[0]}/(${nums.slice(1).join('/')})` : nums.join('/');
