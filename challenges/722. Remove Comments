@@ -1,0 +1,32 @@
+var removeComments = function(source) {
+    const result = [];
+    let inBlock = false;
+    let buffer = "";
+
+    for (const line of source) {
+        let i = 0;
+        if (!inBlock) buffer = "";
+
+        while (i < line.length) {
+            if (!inBlock && line[i] === '/' && i + 1 < line.length && line[i + 1] === '*') {
+                inBlock = true;
+                i += 2;
+            } else if (inBlock && line[i] === '*' && i + 1 < line.length && line[i + 1] === '/') {
+                inBlock = false;
+                i += 2;
+            } else if (!inBlock && line[i] === '/' && i + 1 < line.length && line[i + 1] === '/') {
+                break;
+            } else if (!inBlock) {
+                buffer += line[i++];
+            } else {
+                i++;
+            }
+        }
+
+        if (buffer.length && !inBlock) {
+            result.push(buffer);
+        }
+    }
+
+    return result;
+};
