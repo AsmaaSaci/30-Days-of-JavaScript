@@ -1,0 +1,57 @@
+/**
+ * @param {number[][]} mat
+ * @return {number[]}
+ */
+var findDiagonalOrder = function(mat) {
+    // each diagonal is a collection of cells that have the same sum of x- and y-indices
+    const lengthX = mat[0].length;
+    const lengthY = mat.length;
+    // the x-y sum of the last cell (bottom right)
+    const last = (lengthX - 1) + (lengthY - 1);
+
+    let arr = [];
+    let currX = 0;
+    let currY = 0;
+    // helper closure to automatically check direction
+    let isUp = (sum) => sum % 2 == 0;
+
+    // each iteration is a diagonal
+    for (let sum = 0; sum <= last; sum++) {
+
+        if (isUp(sum)) {
+            // assumption: if we correctly set up currY, we can know the corresponding currX by the x-y sum of that diagonal
+            currX = Math.max(0, sum - currY);
+
+            while (currY >= 0 && currX < lengthX) {
+                arr.push(mat[currY][currX]);
+                // direction going right and up
+                currX++;
+                currY--;
+            }
+
+            // accounting for the over-incremented currX in last interval
+            currX--;
+
+            // setting up currX for next iteration, if not yet reached horizontal boundary, then keep increasing it
+            if (currX !== lengthX - 1) {
+                currX++;
+            }
+        } else {
+            // same but reversed for downwards runs
+            currY = Math.max(0, sum - currX);
+
+            while (currX >= 0 && currY < lengthY) {
+                arr.push(mat[currY][currX]);
+                currX--;
+                currY++;
+            }
+
+            currY--;
+
+            if (currY !== lengthY - 1) {
+                currY++;
+            }
+        }
+    }
+    return arr;
+};
