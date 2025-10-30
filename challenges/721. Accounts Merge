@@ -1,0 +1,51 @@
+/**
+ * @param {string[][]} accounts
+ * @return {string[][]}
+ */
+var accountsMerge = function(accounts) {
+
+    const n = accounts.length;
+    const emailGraph = new Map(); // email → connected emails
+    const emailToName = new Map(); // email → name
+
+    // Step 1: we build graph and map emails to names
+    for (const account of accounts) {
+        const name = account[0];
+        for (let i = 1; i < account.length; i++) {
+
+            emailToName.set(account[i], name);
+            if (!emailGraph.has(account[i])) emailGraph.set(account[i], []);
+            if (i > 1) {
+                emailGraph.get(account[i]).push(account[i - 1]);
+                emailGraph.get(account[i - 1]).push(account[i]);
+            }
+        }
+    }
+
+    const visited = new Set();
+    const result = [];
+
+    // Step 2: DFS to find connected components
+    for (const email of emailGraph.keys()) {
+        if (visited.has(email)) continue;
+
+        const stack = [email];
+        const component = [];
+
+        while (stack.length) {
+            const node = stack.pop();
+            if (visited.has(node)) continue;
+            visited.add(node);
+            component.push(node);
+            
+            for (const neighbor of emailGraph.get(node)) {
+                if (!visited.has(neighbor)) stack.push(neighbor);
+            }
+        }
+
+        component.sort();
+        result.push([emailToName.get(email), ...component]);
+    }
+
+    return result;  
+};
