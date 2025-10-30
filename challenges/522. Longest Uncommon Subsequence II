@@ -1,0 +1,74 @@
+/**
+ * @param {string[]} strs
+ * @return {number}
+ */
+var isSubsequence = function(a, b) {
+    let i = 0, j = 0;
+
+    while(i < a.length && j < b.length) {
+        if(a[i] == b[j]) {
+            i++
+        }
+        j++
+    }
+
+    return i == a.length
+}
+var findLUSlength = function(strs) {
+    // we want the longest uncommon subsequence
+    // focus on word longest
+    /*
+        what it means is if you break apart a String S into multiple parts. eg., abc
+        a, b, c, ab, bc, ac, abc, "empty string"
+        All of these are subsequence, they dont need to be consecutive, just needs to appear as in the order 
+
+        now the longest subsequence here is the string S itself. everything is smaller.
+        so we look for whether abc is present in any other string or not, if it is then len(abc) i.e., 3 cant be answer
+
+        so then we look for ab, bc, ac, if all of them are present then 2 is not an answer as well
+
+
+        so with that we kind of want to find the longest string which isnt a subsequence of any other string
+
+        next, if duplicate string exists then that would be a subsequence of itself, meaning if there are 2 abc strings. then abc cant be the answer 
+        so we can skip it altogether
+    */
+
+    // sort in desc order of length, big strings are better suited to be longest uncommon so we start with that first
+    strs.sort((a, b) => b.length - a.length)
+
+    const map = new Map()
+
+    // keep track of how many times a string occurs, to see duplicates
+
+    strs.forEach(s => map.has(s) ? map.set(s, map.get(s) + 1) : map.set(s, 1))
+
+    for(let i = 0; i < strs.length; i++) {
+        const seq = strs[i]
+
+        // if duplicate, this cant be answer so skip it
+        if(map.get(seq) > 1) continue;
+
+        // if the longest string in array does not have any duplicate then it by definition is "longest" of all string in array
+        // and is also uncommon because all other strings are smaller than it so they cant form a subsequence which is same as it.
+        if(i == 0) return seq.length
+
+        // if let says the longest string had a duplicate and was ignore, so now we check the normal cases and compare other strings in array
+        let isUncommon = true
+        for(let j = 0; j < i; j++) {
+            // if subsequence then skip
+            if(isSubsequence(seq, strs[j])) {
+                isUncommon = false
+                break
+            }
+        }
+
+        // the string we just checked at i, was not present in any other string, so its our answer
+        if(isUncommon) {
+            return seq.length
+        }
+    }
+
+
+    return -1
+};
