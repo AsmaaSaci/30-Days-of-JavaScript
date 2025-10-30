@@ -1,0 +1,16 @@
+var maxDistance = function(arrays) {
+    let minVal = arrays[0][0];
+    let maxVal = arrays[0][arrays[0].length - 1];
+    let result = 0;
+
+    for (let i = 1; i < arrays.length; i++) {
+        const curr = arrays[i];
+        const first = curr[0];
+        const last = curr[curr.length - 1];
+        result = Math.max(result, Math.abs(last - minVal), Math.abs(maxVal - first));
+        minVal = Math.min(minVal, first);
+        maxVal = Math.max(maxVal, last);
+    }
+
+    return result;
+};
