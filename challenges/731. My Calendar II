@@ -1,0 +1,39 @@
+
+var MyCalendarTwo = function() {
+    this.bookings = [];
+    this.overlaps = [];
+    
+};
+
+/** 
+ * @param {number} startTime 
+ * @param {number} endTime
+ * @return {boolean}
+ */
+MyCalendarTwo.prototype.book = function(startTime, endTime) {
+
+   // we check if it overlaps with any double-booked interval
+    for (const [s, e] of this.overlaps) {
+        if (Math.max(s, startTime) < Math.min(e, endTime)) {
+            return false; // Triple booking detected
+        }
+    }
+
+    // we record new overlaps from this booking
+    for (const [s, e] of this.bookings) {
+        if (Math.max(s, startTime) < Math.min(e, endTime)) {
+            this.overlaps.push([Math.max(s, startTime), Math.min(e, endTime)]);
+        }
+    }
+
+    // Safe to book
+    this.bookings.push([startTime, endTime]);
+    return true;
+    
+};
+
+/** 
+ * Your MyCalendarTwo object will be instantiated and called as such:
+ * var obj = new MyCalendarTwo()
+ * var param_1 = obj.book(startTime,endTime)
+ */
