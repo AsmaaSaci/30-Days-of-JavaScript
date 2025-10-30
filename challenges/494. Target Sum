@@ -1,0 +1,24 @@
+/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number}
+ */
+var findTargetSumWays = function(nums, target) {
+
+    const total = nums.reduce((a, b) => a + b, 0);
+
+    // If (target + total) is odd or target is out of bounds, no solution
+    if ((target + total) % 2 !== 0 || Math.abs(target) > total) return 0;
+
+    const subsetSum = (target + total) / 2;
+    const dp = Array(subsetSum + 1).fill(0);
+    dp[0] = 1;
+
+    for (const num of nums) {
+        for (let j = subsetSum; j >= num; j--) {
+            dp[j] += dp[j - num];
+        }
+    }
+
+    return dp[subsetSum];
+};
