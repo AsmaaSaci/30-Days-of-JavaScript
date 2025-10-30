@@ -1,0 +1,50 @@
+/**
+ * @param {string[]} deadends
+ * @param {string} target
+ * @return {number}
+ */
+var openLock = function(deadends, target) {
+    const dead = new Set(deadends);
+    if (dead.has('0000')) return -1;
+
+    const seen = new Set(['0000']);
+    const queue = ['0000'];
+    let index_cur = 0;
+    let steps = 0;
+
+    while (index_cur < queue.length) {
+        const levelSize = queue.length - index_cur;
+
+        for (let i = 0; i < levelSize; i++) {
+            const code = queue[index_cur++];
+            if (code === target) return steps;
+
+            for (const neighbor of getNeighbors(code)) {
+                if (!dead.has(neighbor) && !seen.has(neighbor)) {
+                    seen.add(neighbor);
+                    queue.push(neighbor);
+                }
+            }
+        }
+
+        steps++;
+    }
+
+    return -1;
+
+    function getNeighbors(code) {
+        const neighbors = [];
+
+        for (let i = 0; i < 4; i++) {
+            const digit = parseInt(code[i]);
+
+            for (const move of [-1, 1]) {
+                const newDigit = (digit + move + 10) % 10;
+                const newCode = code.slice(0, i) + newDigit + code.slice(i + 1);
+                neighbors.push(newCode);
+            }
+        }
+
+        return neighbors;
+    }
+};
