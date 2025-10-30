@@ -1,0 +1,59 @@
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+/**
+ * @param {number[]} nums
+ * @return {TreeNode}
+ */
+var constructMaximumBinaryTree = function(nums) {
+    const n = nums.length;
+
+    const logn = Math.floor(Math.log2(n)) + 1;
+
+    const st = Array.from({length: logn}, () => new Array(n).fill(0));
+
+    for (let i = 0; i < n; i++) {
+        st[0][i] = i;
+    }
+
+    for (let j = 1; j < logn; j++) {
+        for (let i = 0; i + (1 << j) <= n; i++) {
+            const leftSegment = st[j - 1][i];
+            const rightSegment =  st[j - 1][i + (1 << (j - 1))];
+
+            st[j][i] = nums[leftSegment] > nums[rightSegment] ?
+                leftSegment : rightSegment;
+        }
+    }
+
+    const log = new Array(n + 1).fill(0);
+
+    for (let i = 2; i <= n; i++) {
+      log[i] = log[i >> 1] + 1;
+    }
+
+    function getMax(left, right) {
+        const j = log[right - left + 1];
+        
+        const leftSegment = st[j][left];
+        const rightSegment = st[j][right - (1 << j) + 1];
+
+        return nums[leftSegment] > nums[rightSegment] ?
+                leftSegment : rightSegment;
+    }
+
+    function buildMaxTree(i, j) {
+        if (i > j) return null;
+
+        const max = getMax(i, j);
+
+        return new TreeNode(nums[max], buildMaxTree(i, max - 1), buildMaxTree(max + 1, j))
+    }
+
+    return buildMaxTree(0, n - 1);
+};
