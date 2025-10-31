@@ -1,0 +1,89 @@
+var minCost = function(maxTime, edges, passingFees) {
+    const n = passingFees.length;
+    const graph = Array.from({ length: n }, () => []);
+
+    for (const [u, v, t] of edges) {
+        graph[u].push([v, t]);
+        graph[v].push([u, t]);
+    }
+
+    class MinHeap {
+        constructor() {
+            this.data = [];
+        }
+        push(item) {
+            this.data.push(item);
+            this._bubbleUp(this.data.length - 1);
+        }
+        pop() {
+            if (this.data.length === 0) return null;
+            const top = this.data[0];
+            const end = this.data.pop();
+            if (this.data.length > 0) {
+                this.data[0] = end;
+                this._sinkDown(0);
+            }
+            return top;
+        }
+        _bubbleUp(index) {
+            const item = this.data[index];
+            while (index > 0) {
+                const parentIndex = Math.floor((index - 1) / 2);
+                const parent = this.data[parentIndex];
+                if (item.cost >= parent.cost) break;
+                this.data[parentIndex] = item;
+                this.data[index] = parent;
+                index = parentIndex;
+            }
+        }
+        _sinkDown(index) {
+            const length = this.data.length;
+            const item = this.data[index];
+            while (true) {
+                let left = 2 * index + 1;
+                let right = 2 * index + 2;
+                let swap = null;
+
+                if (left < length && this.data[left].cost < item.cost) {
+                    swap = left;
+                }
+                if (
+                    right < length &&
+                    this.data[right].cost < (swap === null ? item.cost : this.data[left].cost)
+                ) {
+                    swap = right;
+                }
+                if (swap === null) break;
+                this.data[index] = this.data[swap];
+                this.data[swap] = item;
+                index = swap;
+            }
+        }
+        size() {
+            return this.data.length;
+        }
+    }
+
+    const heap = new MinHeap();
+    const minTime = Array(n).fill(Infinity);
+    heap.push({ node: 0, time: 0, cost: passingFees[0] });
+    minTime[0] = 0;
+
+    while (heap.size()) {
+        const { node, time, cost } = heap.pop();
+
+        if (node === n - 1) return cost;
+
+        for (const [next, t] of graph[node]) {
+            const newTime = time + t;
+            const newCost = cost + passingFees[next];
+
+            if (newTime <= maxTime && newTime < minTime[next]) {
+                minTime[next] = newTime;
+                heap.push({ node: next, time: newTime, cost: newCost });
+            }
+        }
+    }
+
+    return -1;
+};
