@@ -1,0 +1,55 @@
+var kSum = function(nums, k) {
+    let base = 0;
+    for (let x of nums) if (x > 0) base += x;
+    if (k === 1) return base;
+    const arr = nums.map(x => Math.abs(x)).sort((a, b) => a - b);
+    const n = arr.length;
+    class MinHeap {
+        constructor(){ this.h = []; }
+        size(){ return this.h.length; }
+        push(v){ this.h.push(v); this._up(this.h.length-1); }
+        pop(){
+            if(this.h.length===0) return null;
+            const top = this.h[0];
+            const last = this.h.pop();
+            if(this.h.length) { this.h[0] = last; this._down(0); }
+            return top;
+        }
+        _up(i){
+            while(i>0){
+                const p = (i-1)>>1;
+                if(this.h[p].sum <= this.h[i].sum) break;
+                [this.h[p], this.h[i]] = [this.h[i], this.h[p]];
+                i = p;
+            }
+        }
+        _down(i){
+            const n = this.h.length;
+            while(true){
+                let l = i*2+1, r = i*2+2, smallest = i;
+                if(l < n && this.h[l].sum < this.h[smallest].sum) smallest = l;
+                if(r < n && this.h[r].sum < this.h[smallest].sum) smallest = r;
+                if(smallest === i) break;
+                [this.h[i], this.h[smallest]] = [this.h[smallest], this.h[i]];
+                i = smallest;
+            }
+        }
+    }
+    const heap = new MinHeap();
+    if (n > 0) heap.push({sum: arr[0], idx: 0});
+    let deduction = 0;
+    for (let count = 1; count < k; ++count) {
+        const node = heap.pop();
+        if (!node) {
+            deduction = 0;
+            break;
+        }
+        deduction = node.sum;
+        const i = node.idx;
+        if (i + 1 < n) {
+            heap.push({sum: deduction + arr[i+1], idx: i+1});
+            heap.push({sum: deduction - arr[i] + arr[i+1], idx: i+1});
+        }
+    }
+    return base - deduction;
+};
