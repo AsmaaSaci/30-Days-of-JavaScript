@@ -1,0 +1,64 @@
+/**
+ * @param {number[][]} rooms
+ * @param {number[][]} queries
+ * @return {number[]}
+ */
+var closestRoom = function(rooms, queries) {
+  // Sort rooms by size (descending)
+  rooms.sort((a, b) => b[1] - a[1]);
+  // Keep original query indices
+  const sortedQueries = queries.map((q, i) => [...q, i]).sort((a, b) => b[1] - a[1]);
+
+  const ans = Array(queries.length).fill(-1);
+  const availableRooms = []; // sorted by roomId
+  let rIndex = 0;
+
+  for (let [preferred, minSize, idx] of sortedQueries) {
+    // Add all rooms with size >= minSize
+    while (rIndex < rooms.length && rooms[rIndex][1] >= minSize) {
+      insertSorted(availableRooms, rooms[rIndex][0]);
+      rIndex++;
+    }
+
+    if (availableRooms.length === 0) continue;
+
+    // Binary search for closest room
+    const pos = lowerBound(availableRooms, preferred);
+
+    let best = -1;
+    let bestDiff = Infinity;
+
+    if (pos < availableRooms.length) {
+      const diff = Math.abs(availableRooms[pos] - preferred);
+      if (diff < bestDiff || (diff === bestDiff && availableRooms[pos] < best))
+        best = availableRooms[pos], bestDiff = diff;
+    }
+
+    if (pos > 0) {
+      const diff = Math.abs(availableRooms[pos - 1] - preferred);
+      if (diff < bestDiff || (diff === bestDiff && availableRooms[pos - 1] < best))
+        best = availableRooms[pos - 1], bestDiff = diff;
+    }
+
+    ans[idx] = best;
+  }
+
+  return ans;
+};
+
+// Binary insert to keep sorted order
+function insertSorted(arr, val) {
+  let i = lowerBound(arr, val);
+  arr.splice(i, 0, val);
+}
+
+// Return first index ≥ val
+function lowerBound(arr, val) {
+  let l = 0, r = arr.length;
+  while (l < r) {
+    const mid = (l + r) >> 1;
+    if (arr[mid] < val) l = mid + 1;
+    else r = mid;
+  }
+  return l;
+}
