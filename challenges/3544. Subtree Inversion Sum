@@ -1,0 +1,91 @@
+/**
+ * @param {number[][]} edges
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var subtreeInversionSum = function(edges, nums, k) {
+    const len = nums.length
+    function Node(i, val) {
+        this.i = i
+        this.val = val
+
+        this.visited = false
+        this.neighs = []
+        this.children = []
+    }
+
+    // create nodes
+    const nodes = nums.map((val, i) => new Node(i, val))
+    // connect nodes
+    for (const [f, t] of edges) {
+        const F = nodes[f], T = nodes[t]
+        F.neighs.push(T)
+        T.neighs.push(F)
+    }
+
+    // build tree
+    function build(node) {
+        node.visited = true
+        const { children } = node
+        for (const neigh of node.neighs) {
+            if (!neigh.visited) {
+                children.push(neigh)
+                build(neigh)
+            }
+        }
+    }
+    const root = nodes[0]
+    build(root)
+
+
+    // rmg, nodeI
+    const memo = new Array(k)
+    for (const i of memo.keys()) {
+        memo[i] = []
+    }
+
+
+    // k minus 1, used for the nodes immediately under inverted parents
+    const kM = k - 1
+    // node: represents its subtree
+    // rmg: how many remaining edges have to go to apply inversion
+    // this function returns an array [minResult, maxResult].
+    // they represent the minimum and maximum results for the subtree at node
+    function dfs(node, rmg) {
+        const nodeI = node.i
+        const ext = memo[rmg][nodeI]
+        if (ext !== undefined)  return ext
+
+        let minResult = node.val, maxResult = minResult
+        // do not invert here
+        const nextRmgSkip = Math.max(0, rmg - 1)
+        for (const child of node.children) {
+            const subresult = dfs(child, nextRmgSkip)
+            minResult += subresult[0]
+            maxResult += subresult[1]
+        }
+
+        if (rmg === 0) {
+            // invert here
+            let resultTakeMin = -node.val, resultTakeMax = resultTakeMin
+            for (const child of node.children) {
+                const subresult = dfs(child, kM)
+                // because of subtraction instead of addition, 
+                // we must swap the values of subresult
+                resultTakeMin -= subresult[1]
+                resultTakeMax -= subresult[0]
+            }
+
+            minResult = Math.min(minResult, resultTakeMin)
+            maxResult = Math.max(maxResult, resultTakeMax)
+        }
+
+        const result = [minResult, maxResult]
+        return memo[rmg][nodeI] = result
+    }
+
+
+    const result = dfs(root, 0)[1]
+    return result
+};
