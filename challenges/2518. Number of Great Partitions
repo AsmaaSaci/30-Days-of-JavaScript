@@ -1,0 +1,66 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var countPartitions = function(nums, k) {
+    const len = nums.length, modMe = 1e9 + 7, ModMe = BigInt(modMe)
+    const total = nums.reduce((acc, cur) => acc + cur, 0)
+    const kP = k + 1
+
+    // fromI, rmgA (remaining A), rmgB (remaining B)
+    // if rmgA or rmgB is negative, treat it as 0
+    const memo = new Array(len)
+    for (const i of memo.keys()) {
+        const row = memo[i] = new Array(kP)
+        for (const j of row.keys()) {
+            row[j] = []
+        }
+    }
+
+
+    // find power of 2
+    const powMemo = []
+    function pow(p) {
+        if (p === 0)    return 1
+
+        const ext = powMemo[p]
+        if (ext !== undefined)  return ext
+
+        const half = p >> 1
+        const subresult = pow(half)
+        let result = (BigInt(subresult) ** 2n) % ModMe
+        if (p & 1)  result = (result * 2n) % ModMe
+
+        return powMemo[p] = Number(result)
+    }
+    
+    function dp(fromI, rmgA, rmgB) {
+        if (rmgA === 0 && rmgB === 0) {
+            return pow(len - fromI)
+        }
+
+        if (fromI === len) {
+            return 0
+        }
+
+        const ext = memo[fromI][rmgA][rmgB]
+        if (ext !== undefined)  return ext
+
+        let result = 0
+        const nextI = 1 + fromI
+        const val = nums[fromI]
+        
+        // give current element to array B
+        const subresultSkip = dp(nextI, rmgA, Math.max(0, rmgB - val))
+        // give current element to array A
+        const subresultTake = dp(nextI, Math.max(0, rmgA - val), rmgB)
+        result = (result + subresultSkip + subresultTake) % modMe
+
+        return memo[fromI][rmgA][rmgB] = result
+    }
+
+
+    const result = dp(0, k, k)
+    return result
+};
