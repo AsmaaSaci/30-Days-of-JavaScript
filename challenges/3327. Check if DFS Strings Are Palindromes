@@ -1,0 +1,61 @@
+var findAnswer = function(parent, s) {
+  const n = parent.length;
+  const children = Array.from({length: n}, () => []);
+  const roots = [];
+  for (let i = 0; i < n; i++) {
+    if (parent[i] === -1) roots.push(i);
+    else children[parent[i]].push(i);
+  }
+
+  const base1 = 911382323n, mod1 = 1000000007n;
+  const base2 = 972663749n, mod2 = 1000000009n;
+  const pow1 = new Array(n + 1).fill(0n);
+  const pow2 = new Array(n + 1).fill(0n);
+  pow1[0] = 1n; pow2[0] = 1n;
+  for (let i = 1; i <= n; i++) {
+    pow1[i] = (pow1[i-1] * base1) % mod1;
+    pow2[i] = (pow2[i-1] * base2) % mod2;
+  }
+
+  const len = new Array(n).fill(0);
+  const fh1 = new Array(n).fill(0n), rh1 = new Array(n).fill(0n);
+  const fh2 = new Array(n).fill(0n), rh2 = new Array(n).fill(0n);
+  const ans = new Array(n).fill(false);
+
+  const stack = [];
+  for (const r of roots) stack.push([r, false]);
+
+  while (stack.length) {
+    const [u, visited] = stack.pop();
+    if (!visited) {
+      stack.push([u, true]);
+      const ch = children[u];
+      for (let i = ch.length - 1; i >= 0; i--) stack.push([ch[i], false]);
+    } else {
+      // combine children's hashes in order
+      let L = 0;
+      let f1 = 0n, r1 = 0n, f2 = 0n, r2 = 0n;
+      for (const v of children[u]) {
+        // new forward = f * base^{len[v]} + fh[v]
+        f1 = (f1 * pow1[len[v]] + fh1[v]) % mod1;
+        f2 = (f2 * pow2[len[v]] + fh2[v]) % mod2;
+        // new reverse = rh[v] * base^{L} + r
+        r1 = (rh1[v] * pow1[L] + r1) % mod1;
+        r2 = (rh2[v] * pow2[L] + r2) % mod2;
+        L += len[v];
+      }
+      // append current char at end
+      const val = BigInt(s.charCodeAt(u));
+      f1 = (f1 * base1 + val) % mod1;
+      f2 = (f2 * base2 + val) % mod2;
+      r1 = (val * pow1[L] + r1) % mod1;
+      r2 = (val * pow2[L] + r2) % mod2;
+      len[u] = L + 1;
+      fh1[u] = f1; fh2[u] = f2;
+      rh1[u] = r1; rh2[u] = r2;
+      ans[u] = (f1 === r1 && f2 === r2);
+    }
+  }
+
+  return ans;
+};
