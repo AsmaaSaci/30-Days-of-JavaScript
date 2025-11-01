@@ -1,0 +1,87 @@
+/**
+ * @param {number[][]} mat
+ * @return {number}
+ */
+var countCoprime = function(mat) {
+    const MOD = 1000000007;
+    const rows = mat.length;
+    const cols = mat[0].length;
+
+    // Find max value in mat
+    let maxA = 0;
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (mat[i][j] > maxA) maxA = mat[i][j];
+        }
+    }
+
+    // Sieve primes up to maxA (not strictly needed but helpful)
+    const isPrime = new Array(maxA + 1).fill(true);
+    isPrime[0] = isPrime[1] = false;
+    for (let p = 2; p * p <= maxA; p++) {
+        if (isPrime[p]) {
+            for (let q = p * p; q <= maxA; q += p) isPrime[q] = false;
+        }
+    }
+    const primes = [];
+    for (let i = 2; i <= maxA; i++) if (isPrime[i]) primes.push(i);
+
+    // Compute Mobius function mu[1..maxA]
+    // mu(n) = 0 if n has squared prime factor, else (-1)^{#prime factors}
+    const mu = new Array(maxA + 1).fill(1);
+    // initialize prime factor marks
+    for (let i = 2; i <= maxA; i++) mu[i] = 1;
+    for (const p of primes) {
+        for (let multiple = p; multiple <= maxA; multiple += p) {
+            mu[multiple] = -mu[multiple];
+        }
+        const pp = p * p;
+        for (let multiple = pp; multiple <= maxA; multiple += pp) {
+            mu[multiple] = 0;
+        }
+    }
+    mu[0] = 0; // not used
+
+    // For each row and each d, count how many numbers in that row are divisible by d
+    // cnt[rowIndex][d] or better: cntForD[d] = array of counts per row
+    // We'll compute cntRow[d] as array length rows
+    const cntForD = new Array(maxA + 1);
+    for (let d = 1; d <= maxA; d++) {
+        const arr = new Array(rows).fill(0);
+        for (let i = 0; i < rows; i++) {
+            let c = 0;
+            for (let j = 0; j < cols; j++) {
+                if (mat[i][j] % d === 0) c++;
+            }
+            arr[i] = c;
+        }
+        cntForD[d] = arr;
+    }
+
+    // For each d, number of ways all chosen numbers divisible by d = product over rows of cntForD[d][row]
+    // Then answer = sum_{d=1..maxA} mu[d] * ways(d)
+    let ans = 0n;
+    for (let d = 1; d <= maxA; d++) {
+        if (mu[d] === 0) continue;
+        let ways = 1n;
+        const arr = cntForD[d];
+        for (let i = 0; i < rows; i++) {
+            // if any row has zero choices divisible by d => ways = 0
+            if (arr[i] === 0) {
+                ways = 0n;
+                break;
+            }
+            ways = (ways * BigInt(arr[i])) % BigInt(MOD);
+        }
+        if (ways === 0n) continue;
+        if (mu[d] === 1) {
+            ans = (ans + ways) % BigInt(MOD);
+        } else if (mu[d] === -1) {
+            ans = (ans - ways) % BigInt(MOD);
+        }
+    }
+
+    // normalize to positive
+    ans = (ans % BigInt(MOD) + BigInt(MOD)) % BigInt(MOD);
+    return Number(ans);
+};
