@@ -1,0 +1,82 @@
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var numGoodSubarrays = function(nums, k) {
+    const n = nums.length;
+
+    // 1) نجمع runs
+    const runs = [];
+    let i = 0;
+    while (i < n) {
+        let j = i;
+        while (j < n && nums[j] === nums[i]) j++;
+        runs.push([nums[i], j - i]);
+        i = j;
+    }
+
+    // 2) نضع lengths الممكنة التي sum%k ==0 لكل value-run
+    const seenSingleValue = new Set(); // hash: value + "#" + L
+
+    for (const [val, len] of runs) {
+        for (let L = 1; L <= len; L++) {
+            if ((BigInt(L) * BigInt(val)) % BigInt(k) === 0n) {
+                seenSingleValue.add(val + "#" + L);
+            }
+        }
+    }
+
+    // 3) total subarrays = n*(n+1)/2
+    const total = BigInt(n) * BigInt(n + 1) / 2n;
+
+    // subarrays of single value runs = sum over runs: len*(len+1)/2
+    let singles = 0n;
+    for (const [_, len] of runs) {
+        singles += BigInt(len) * BigInt(len + 1) / 2n;
+    }
+
+    // subarrays with ≥2 distinct elements = total - singles
+    const diff2plus = total - singles;
+
+    // كل الـ diff2plus اللي جيدة؟ لا. لازم نحسب فقط اللي sum%k==0
+    // نحتاج نعد فقط subarrays اللي فيها ≥2 values و sum%k==0
+    // و لأن sequences مختلفة، فما نحتاج set
+    // نعدّها prefix mod count عادي:
+    let prefix = 0n;
+    const freq = new Map();
+    freq.set(0n, 1);
+
+    let ans2 = 0n;
+    for (let x of nums) {
+        prefix = (prefix + BigInt(x)) % BigInt(k);
+        let need = prefix;
+        if (freq.has(need)) ans2 += BigInt(freq.get(need));
+        freq.set(need, (freq.get(need) || 0) + 1);
+    }
+
+    // ans2 = total good subarrays
+    // single value good distinct = size of seenSingleValue
+    // لكن ans2 حسب prefix عدّ كل single runs الفردية كاملة
+    // لازم نزيل "تكرار" single runs ونستبدلها بالdistinct lengths
+
+    // نحتاج نعرف كم single-value-good subarray موجودة فعلاً
+    // (كل run: len-run => عدد subarrays المفردة = len*(len+1)/2)
+    // بس good منها فقط lengths اللي (L*value)%k==0
+    // نحسب actual count single-value-good:
+    let actualSingles = 0n;
+    for (const [val, len] of runs) {
+        for (let L = 1; L <= len; L++) {
+            if ((BigInt(L) * BigInt(val)) % BigInt(k) === 0n) {
+                actualSingles += BigInt(len - L + 1);
+            }
+        }
+    }
+
+    // prefix gave ans2 = all good including all single ones fully
+    // distinct single = seenSingleValue.size
+    // بدل actualSingles نضع seenSingleValue.size
+
+    // نحتاج = (ans2 - actualSingles) + seenSingleValue.size
+    return Number((ans2 - actualSingles) + BigInt(seenSingleValue.size));
+};
