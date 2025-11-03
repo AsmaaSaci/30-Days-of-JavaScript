@@ -1,0 +1,29 @@
+/**
+ * @param {number[]} hand
+ * @param {number} groupSize
+ * @return {boolean}
+ */
+var isNStraightHand = function(hand, groupSize) {
+
+    const n = hand.length;
+    if( n % groupSize !==0)  return false;
+    const count = new Map();
+    
+    for (const card of hand) {
+        count.set(card, (count.get(card) || 0) + 1);
+    }
+
+    const sorted = hand.toSorted((a, b) => a - b);
+
+    for (const card of sorted) {
+        if (!count.get(card)) continue;
+
+        for (let i = 0; i < groupSize; i++) {
+            const next = card + i;
+            if (!count.get(next)) return false;
+            count.set(next, count.get(next) - 1);
+        }
+    }
+
+    return true;
+};
