@@ -1,0 +1,90 @@
+/**
+ * @param {number} k
+ */
+var MyCircularQueue = function(k) {
+        this.queue = new Array(k);
+        this.size = 0;
+        this.capacity = k;
+        this.front =-1;
+        this.rear =-1;
+    
+};
+
+/** 
+ * @param {number} value
+ * @return {boolean}
+ */
+MyCircularQueue.prototype.enQueue = function(value) {
+    if(this.size ===  this.capacity)  return false;
+    if(this.size === 0)  {
+        this.front = 0;
+        this.rear = 0;
+        this.queue[this.rear] = value;
+    } else {
+         this.rear++;
+         if(this.rear ===  this.capacity ) this.rear=0;
+        this.queue[this.rear] = value;   
+    }
+    this.size++;
+    return true;
+};
+
+/**
+ * @return {boolean}
+ */
+MyCircularQueue.prototype.deQueue = function() {
+    if(this.size === 0)  return false;
+    let val = this.queue[this.front];
+    this.size--;
+    if(this.size === 0){
+        this.front = null;
+        this.rear = null;
+    }else{
+        this.front++;
+        if(this.front ===  this.capacity ) this.front=0;
+    }
+    
+    return true;
+};
+
+/**
+ * @return {number}
+ */
+MyCircularQueue.prototype.Front = function() {
+    if(this.size === 0)  return -1;
+    return this.queue[this.front];
+    
+};
+
+/**
+ * @return {number}
+ */
+MyCircularQueue.prototype.Rear = function() {
+    if(this.size === 0)  return -1;
+    return this.queue[this.rear];
+};
+
+/**
+ * @return {boolean}
+ */
+MyCircularQueue.prototype.isEmpty = function() {
+     return this.size === 0;
+};
+
+/**
+ * @return {boolean}
+ */
+MyCircularQueue.prototype.isFull = function() {
+    return this.size ===   this.capacity;
+};
+
+/** 
+ * Your MyCircularQueue object will be instantiated and called as such:
+ * var obj = new MyCircularQueue(k)
+ * var param_1 = obj.enQueue(value)
+ * var param_2 = obj.deQueue()
+ * var param_3 = obj.Front()
+ * var param_4 = obj.Rear()
+ * var param_5 = obj.isEmpty()
+ * var param_6 = obj.isFull()
+ */
