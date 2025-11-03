@@ -1,0 +1,21 @@
+function numFriendRequests(ages) {
+    const buckets = new Array(121).fill(0);
+    // bucket sort ages
+    for (const age of ages) {
+        buckets[age]++;
+    }
+    let result = 0;
+    // people younger than 15 can't send or receive friend requests (condition 1)
+    for (let i = 15; i < 121; i++) {
+        if (buckets[i]) {
+            // j is initialized to match condition 1 and terminates due to condition 2
+            // note that condition 3 never comes up as condition 2 already implies the same.
+            let recipients = 0;
+            for (let j = Math.floor(i / 2) + 8; j <= i; j++) {
+                recipients += buckets[j];
+            }
+            result += (recipients - 1) * buckets[i];
+        }
+    }
+    return result;
+};
