@@ -1,0 +1,42 @@
+const TopVotedCandidate = function (persons, times) {
+  this.leadingVotes = [];
+  this.times = times;
+
+  let n = persons.length;
+  let voteCount = new Map();
+  let leading = 0;
+
+  for (let i = 0; i < n; i++) {
+    voteCount.set(
+      persons[i],
+      voteCount.get(persons[i]) ? voteCount.get(persons[i]) + 1 : 1
+    );
+
+    // Update leading candidate if necessary
+    if (voteCount.get(persons[i]) >= voteCount.get(leading)) {
+      leading = persons[i];
+    }
+
+    this.leadingVotes[times[i]] = leading;
+  }
+};
+
+// Perform binary search to find the closest time <= t
+TopVotedCandidate.prototype.q = function (t) {
+  let left = 0;
+  let right = this.times.length - 1;
+  let ans = 0;
+
+  while (left <= right) {
+    let mid = Math.floor((left + right) / 2);
+
+    if (this.times[mid] <= t) {
+      ans = this.times[mid];
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return this.leadingVotes[ans];
+};
