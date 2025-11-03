@@ -1,0 +1,41 @@
+/**
+ * @param {number[][]} points
+ * @return {number}
+ */
+var minAreaRect = function(points) {
+    const xMap = new Map();
+
+    // we group points by x-coordinate
+    for (const [x, y] of points) {
+        if (!xMap.has(x)) xMap.set(x, []);
+        xMap.get(x).push(y);
+    }
+
+    const yPairToX = new Map();
+    let minArea = Infinity;
+
+    // we process x-coordinates in sorted order
+    const sortedX = [...xMap.keys()].sort((a, b) => a - b);
+    
+    for (const x of sortedX) {
+        const yList = xMap.get(x).sort((a, b) => a - b);
+
+        // we check all y-pairs at this x
+        for (let i = 0; i < yList.length-1; i++) {
+            for (let j = i + 1; j < yList.length; j++) {
+                const y1 = yList[i], y2 = yList[j];
+                const key = `${y1},${y2}`;
+
+                if (yPairToX.has(key)) {
+                    const prevX = yPairToX.get(key);
+                    const area = (x - prevX) * (y2 - y1);
+                    minArea = Math.min(minArea, area);
+                }
+
+                yPairToX.set(key, x);
+            }
+        }
+    }
+
+    return minArea === Infinity ? 0 : minArea;
+};
