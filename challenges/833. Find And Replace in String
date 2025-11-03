@@ -1,0 +1,38 @@
+/**
+ * @param {string} s
+ * @param {number[]} indices
+ * @param {string[]} sources
+ * @param {string[]} targets
+ * @return {string}
+ */
+var findReplaceString = function(s, indices, sources, targets) {
+    
+    const k = indices.length;
+    const replaceMap = new Map();
+
+    // Step 1: we build a map of valid replacements
+    for (let i = 0; i < k; i++) {
+        const idx = indices[i];
+        const src = sources[i];
+        if (s.slice(idx, idx + src.length) === src) {
+            replaceMap.set(idx, [src.length, targets[i]]);
+        }
+    }
+
+    // Step 2: we traverse the string and apply replacements
+    let result = "";
+    let i = 0;
+
+    while (i < s.length) {
+        if (replaceMap.has(i)) {
+            const [len, replacement] = replaceMap.get(i);
+            result += replacement;
+            i += len;
+        } else {
+            result += s[i];
+            i++;
+        }
+    }
+
+    return result;
+};
