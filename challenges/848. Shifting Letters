@@ -1,0 +1,11 @@
+var shiftingLetters = function(s, shifts) {
+    let sum = 0;
+    let arr = s.split('');
+    for (let i = s.length - 1; i >= 0; i--) {
+        sum += shifts[i];
+        let charCode = arr[i].charCodeAt(0) - 97;
+        charCode = (charCode + sum) % 26;
+        arr[i] = String.fromCharCode(97 + charCode);
+    }
+    return arr.join('');
+};
