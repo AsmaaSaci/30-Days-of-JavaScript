@@ -1,0 +1,28 @@
+/**
+ * @param {number[]} arr
+ * @return {number}
+ */
+var longestMountain = function (arr) {
+    const n = arr.length;
+    let longest = 0;
+
+    for (let i = 1; i < n - 1; i++) {
+        let left = i - 1;  // Pointer to check the elements to the left of the peak
+        let right = i + 1;  // Pointer to check the elements to the right of the peak
+
+        // Check if the current element is a peak (greater than both its neighbors)
+        if (arr[left] < arr[i] && arr[right] < arr[i]) {
+            // The current element is a peak, now expand left and right to find the full mountain
+            // Move left pointer to the left until the sequence stops increasing
+            while (left >= 0 && arr[left - 1] < arr[left]) left--;
+
+            // Move right pointer to the right until the sequence stops decreasing
+            while (right < n - 1 && arr[right] > arr[right + 1]) right++;
+
+            // Calculate the length of the mountain and update the longest mountain if necessary
+            longest = Math.max(longest, right - left + 1);
+        }
+    }
+
+    return longest;
+};
