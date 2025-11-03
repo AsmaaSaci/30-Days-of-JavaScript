@@ -1,0 +1,49 @@
+/**
+ * @param {number[][]} richer
+ * @param {number[]} quiet
+ * @return {number[]}
+ */
+var loudAndRich = function (richer, quiet) {
+    let n = quiet.length;
+    let graph = new Array(n).fill().map(() => []);
+    let inDegree = new Array(n).fill(0);
+    let result = new Array(n).fill(0);
+    let queue = [];
+    
+   
+    for (let edge of richer) {
+        let source = edge[0]; // Person who is poorer
+        let destination = edge[1]; // Person who is richer
+        graph[source].push(destination);
+        inDegree[destination]++; // Increase in-degree for the richer person
+    }
+
+    // Initialize result and queue with nodes that have no incoming edges (in-degree = 0)
+    for (let i = 0; i < n; i++) {
+        result[i] = i; // Each person is initially the quietest known
+        if (inDegree[i] === 0) { // Start with those who are not poorer than anyone
+            queue.push(i);
+        }
+    }
+
+  
+    while (queue.length) {
+        let person = queue.shift(); 
+        
+        for (let nbr of graph[person]) { 
+            // Update the least quiet person for the neighbor
+            if (quiet[result[person]] < quiet[result[nbr]]) {
+                result[nbr] = result[person]; // Update the quietest known for nbr
+            }
+            
+            inDegree[nbr]--; 
+            
+            
+            if (inDegree[nbr] === 0) {
+                queue.push(nbr);
+            }
+        }
+    }
+    
+    return result;
+};
