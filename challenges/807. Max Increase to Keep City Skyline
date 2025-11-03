@@ -1,0 +1,27 @@
+var maxIncreaseKeepingSkyline = function(grid) {
+    const n = grid.length;
+    const row_max = new Array(n);
+    const col_max = new Array(n);
+
+    // 1-pas: satr va ustun maksimumlarini bitta siklda topish
+    for (let i = 0; i < n; i++) {
+        let rmax = 0;
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] > rmax) rmax = grid[i][j];
+            if (i === 0 || grid[i][j] > col_max[j]) col_max[j] = grid[i][j];
+        }
+        row_max[i] = rmax;
+    }
+
+    // 2-pas: oshirishlar yig‘indisini hisoblash
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+        const rmax = row_max[i];
+        for (let j = 0; j < n; j++) {
+            const allowed = rmax < col_max[j] ? rmax : col_max[j]; // min() o‘rnida shart
+            sum += allowed - grid[i][j];
+        }
+    }
+
+    return sum;
+};
