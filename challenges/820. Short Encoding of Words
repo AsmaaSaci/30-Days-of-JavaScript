@@ -1,0 +1,16 @@
+var minimumLengthEncoding = function(W) {
+    let len = W.length, trie = new Map(), ans = 1
+    for (let word of W) {
+        let curr = trie, newWord = false
+        for (let j = word.length - 1; ~j; j--) {
+            let char = word.charAt(j)
+            if (!curr.size && !newWord)
+                ans -= word.length - j
+            if (!curr.has(char))
+                newWord = true, curr.set(char, new Map())
+            curr = curr.get(char)
+        }
+        if (newWord) ans += word.length + 1
+    }
+    return ans
+};
