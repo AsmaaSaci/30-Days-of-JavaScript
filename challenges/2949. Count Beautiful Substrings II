@@ -1,0 +1,74 @@
+function isPrime(x) {
+    const ub = Math.sqrt(x)
+    for (let i = 2; i <= ub; i++)
+        if (x % i === 0)
+            return false
+    
+    return true
+}
+
+const primes = []
+for (let i = 2; i <= 1e3; i++)
+    if (isPrime(i))
+        primes.push(i)
+
+/**
+ * @param {string} s
+ * @param {number} k
+ * @return {number}
+ */
+var beautifulSubstrings = function(s, k) {
+    const len = s.length
+
+    // min value for subarray's c or v freq
+    let basic = 1
+    for (const prime of primes) {
+        if (prime > k)  continue
+        let freq = 0
+        for (; k % prime === 0; k /= prime)
+            freq++
+        
+        const half = Math.ceil(freq / 2)
+        const outcome = prime ** half
+        basic *= outcome
+    }
+    // and `basic` needs to be doubled
+    const doubled = basic << 1
+
+
+    function isVowel(ch) {
+        return ch === 'a' || ch === 'e' || ch === 'i' || ch === 'o' || ch === 'u'
+    }
+
+    // freq(c) - freq(v) -> corresponding indices array
+    // structure of indices array: remainder -> index count
+    const diff2indices = new Map()
+    // setup initial value (the one at -1)
+    const firstIndices = new Array(doubled).fill(0)
+    firstIndices[doubled - 1] = 1
+    diff2indices.set(0, firstIndices)
+
+    let result = 0, cCount = 0, vCount = 0
+    for (let i = 0; i < len; i++) {
+        const ch = s[i]
+        if (isVowel(ch))    vCount++
+        else    cCount++
+
+        const diff = cCount - vCount
+        const rmd = i % doubled
+        const ext = diff2indices.get(diff)
+        
+        if (!ext) { // create a new indices array
+            const indices = new Array(doubled).fill(0)
+            indices[rmd] = 1
+            diff2indices.set(diff, indices)
+        } else { // take outcome existing indices array, and update that array
+            const outcome = ext[rmd]
+            result += outcome
+            ext[rmd]++
+        }
+    }
+
+
+    return result
+};
