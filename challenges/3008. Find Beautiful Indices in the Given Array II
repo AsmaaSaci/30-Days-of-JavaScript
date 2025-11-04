@@ -1,0 +1,80 @@
+/**
+ * @param {string} s
+ * @param {string} a
+ * @param {string} b
+ * @param {number} k
+ * @return {number[]}
+ */
+var beautifulIndices = function(s, a, b, k) {
+    const LEN = s.length
+    function zf(str) {
+        const len = str.length
+        const z = new Array(len)
+        z[0] = 0
+
+        let low = 0, high = 0
+        for (let i = 1; i < len; i++) {
+            let outcome = 0
+
+            if (i < high) {
+                outcome = Math.min(high - i, z[i - low])
+            }
+
+            while (i + outcome < len && str[i + outcome] === str[outcome])
+                outcome++
+            
+            if (i + outcome > high) {
+                high = i + outcome
+                low = i
+            }
+            
+            z[i] = outcome
+        }
+
+        return z
+    }
+    function findIndices(other) {
+        const size = other.length, sizeP = 1 + size
+        const supstring = other + '#' + s
+        const z = zf(supstring)
+        
+        const result = []
+        for (let offset = 0; offset < LEN; offset++) {
+            if (z[sizeP + offset] === size) {
+                result.push(offset)
+            }
+        }
+
+        return result
+    }
+
+
+    const indicesA = findIndices(a), indicesB = findIndices(b)
+    if (a === b)    return indicesA
+
+    
+    const result = []
+    for (const idxA of indicesA) {
+        const UB = idxA + k, LB = idxA - k
+        let low, high
+        low = 0
+        high = indicesB.length - 1
+        // find latest low where 
+        // indicesB[low] <= UB
+        if (indicesB[low] <= UB) {
+            while (low < high) {
+                const mid = (1 + low + high) >> 1
+                if (indicesB[mid] <= UB)
+                    low = mid
+                else
+                    high = mid - 1
+            }
+            if (indicesB[low] >= LB) {
+                result.push(idxA)
+            }
+        }
+    }
+
+
+    return result
+};
