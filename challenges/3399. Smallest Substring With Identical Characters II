@@ -1,0 +1,66 @@
+/**
+ * @param {string} s
+ * @param {number} numOps
+ * @return {number}
+ */
+var minLength = function(s, numOps) {
+    const len = s.length
+
+    // sizes of consecutive 0s and 1s
+    const sizes = []
+    let prev = '2', consec = 0
+    for (let i = 0; i < len; i++) {
+        const ch = s[i]
+        if (ch === prev)    consec++
+        else {
+            sizes.push(consec)
+            prev = ch
+            consec = 1
+        }
+    }
+    sizes.push(consec)
+
+
+    // for a certain threshold, can we 
+    // achieve it within numOps operations
+    function can(threshold) {
+        if (threshold === 1) {
+            let outcomeA = 0, outcomeB = 0
+            for (let i = 0; i < len; i++) {
+                let valA = i & 1, valB = 1 - valA
+                const val = Number(s[i])
+                if (val === valA) {
+                    outcomeB++
+                } else {
+                    outcomeA++
+                }
+            }
+
+            return Math.min(outcomeA, outcomeB) <= numOps
+        }
+
+        let outcome = 0
+        const thresholdP = threshold + 1
+        for (const size of sizes) {
+            const cost = Math.ceil((size + 1) / thresholdP) - 1
+            outcome += cost
+            if (outcome > numOps)   return false
+        }
+
+        return true
+    }
+
+
+    // finally comes the binary search
+    let low = 1, high = len
+    // find earliest high where 
+    // can(high) === true
+    while (low < high) {
+        const mid = (low + high) >> 1
+        if (can(mid))   high = mid
+        else    low = mid + 1
+    }  
+
+
+    return high
+};
