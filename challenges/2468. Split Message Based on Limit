@@ -1,0 +1,89 @@
+/**
+ * @param {string} message
+ * @param {number} limit
+ * @return {string[]}
+ */
+var splitMessage = function(message, limit) {
+    
+    // Method to check if the message can be split into a given number of parts
+    let canSplit = (nParts) => {
+
+        let messageIndex = 0
+        for (let partNumber = 1; partNumber <= nParts; partNumber++) {
+
+            // Return early if we've already consumed the message
+            if (messageIndex >= message.length) return true
+            
+            // build this part
+            let remainingCharsForThisPart = limit
+
+            // Remove characters for the tag
+            remainingCharsForThisPart -= nParts.toString().length
+            remainingCharsForThisPart -= partNumber.toString().length
+            remainingCharsForThisPart -= 3
+
+            // check and return early if needed
+            if (remainingCharsForThisPart <= 0) return false
+
+            // use up remaining characters for this part and move the message pointer
+            // ahead by that many characters
+            messageIndex += remainingCharsForThisPart
+        }
+        return messageIndex >= message.length
+    }
+
+    // Find fewest using binary search
+    let fewestParts = -1
+    let searchRanges = [[1,9], [10,99], [100,999], [1000,9999]]
+    for (let searchRange of searchRanges) {
+
+        let [l,r] = [searchRange[0], searchRange[1]]
+
+        // I.e. message of length 99, does NOT need to search in the range 100-999
+        if (message.length < l) continue
+
+        while (l <=r ) {
+
+            // number of parts in the middle of our search space
+            let m = Math.floor((l+r)/2)
+
+            if (canSplit(m)) {
+                // can split, but let's check if can do even better
+                fewestParts = m
+                r = m-1
+            } else {
+                // need more parts
+                l = m+1
+            }
+        }
+
+        if (fewestParts != -1) break
+
+    }
+    
+    // Build result
+    let result = []
+    let messageIndex = 0
+    for (let partNumber = 1; partNumber <= fewestParts; partNumber++) {
+
+        // Calculate remaining chars like before
+        let remainingCharsForThisPart = limit
+
+        // Remove characters for the tag
+        remainingCharsForThisPart -= fewestParts.toString().length
+        remainingCharsForThisPart -= partNumber.toString().length
+        remainingCharsForThisPart -= 3
+
+        // build this part
+        let part = ""
+        part += message.slice(messageIndex, messageIndex + remainingCharsForThisPart)
+        part += ("<" + partNumber.toString() + "/" + fewestParts.toString() + ">")
+        result.push(part)
+
+        // update message index
+        messageIndex += remainingCharsForThisPart
+    }
+
+    return result
+
+};
