@@ -1,0 +1,59 @@
+const MOD = 1000000007;
+
+function toBaseDigits(decStr, base) {
+    let n = BigInt(decStr);
+    if (n === 0n) return [0];
+    const B = BigInt(base);
+    const arr = [];
+    while (n > 0n) {
+        arr.push(Number(n % B));
+        n /= B;
+    }
+    arr.reverse();
+    return arr;
+}
+
+function countLE(decStr, base) {
+    if (decStr === null) return 0;
+    const digits = toBaseDigits(decStr, base);
+    const m = digits.length;
+    const b = base;
+    const memo = Array.from({length: m+1}, () => Array.from({length: b}, () => [-1, -1])); // [started=0,1]
+
+    function dfs(pos, prev, started, tight) {
+        if (pos === m) return started ? 1 : 0;
+        if (!tight) {
+            const cached = memo[pos][prev][started?1:0];
+            if (cached !== -1) return cached;
+        }
+        const limit = tight ? digits[pos] : (b - 1);
+        let res = 0;
+        for (let dig = 0; dig <= limit; dig++) {
+            const nextTight = tight && (dig === limit);
+            if (!started) {
+                if (dig === 0) {
+                    res += dfs(pos + 1, 0, false, nextTight);
+                } else {
+                    res += dfs(pos + 1, dig, true, nextTight);
+                }
+            } else {
+                if (dig < prev) continue;
+                res += dfs(pos + 1, dig, true, nextTight);
+            }
+            if (res >= MOD) res -= MOD;
+        }
+        if (!tight) memo[pos][prev][started?1:0] = res;
+        return res;
+    }
+
+    return dfs(0, 0, false, true) % MOD;
+}
+
+function countNumbers(l, r, b) {
+    const rCount = countLE(r, b);
+    const lminus = (BigInt(l) - 1n) < 0n ? null : ( (BigInt(l) - 1n).toString() );
+    const lCount = countLE(lminus, b);
+    let ans = (rCount - lCount) % MOD;
+    if (ans < 0) ans += MOD;
+    return ans;
+}
