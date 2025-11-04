@@ -1,0 +1,21 @@
+/**
+ * @param {string} text
+ * @return {number}
+ */
+var distinctEchoSubstrings = function(text) {
+    const n = text.length;
+    const seen = new Set();
+    
+    for (let length = 1; length <= n / 2; length++) {
+        for (let i = 0; i < n - 2 * length + 1; i++) {
+            const firstHalf = text.slice(i, i + length);
+            const secondHalf = text.slice(i + length, i + 2 * length);
+            
+            if (firstHalf === secondHalf) {
+                seen.add(firstHalf);
+            }
+        }
+    }
+    
+    return seen.size;
+};
