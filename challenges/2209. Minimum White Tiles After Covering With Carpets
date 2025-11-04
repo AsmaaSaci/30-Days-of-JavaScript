@@ -1,0 +1,85 @@
+let dp=Array.from({length:1001},()=>Array(1001).fill(0));
+/**
+ * @param {string} floor
+ * @param {number} numCarpets
+ * @param {number} carpetLen
+ * @return {number}
+ */
+
+var minimumWhiteTiles = function(floor, numCarpets, carpetLen) {
+
+    // let pfix=new Array(floor.length).fill(0);
+    // let cnt=0;
+    // pfix[0]=floor[0]=='1'?1:0;
+    // cnt+=floor[0]=='1'?1:0;
+    // for(let i=1;i<floor.length;i++){
+
+    //     pfix[i]=pfix[i-1]+(floor[i]=='1'?1:0);
+    //     cnt+= floor[i]=='1'?1:0;
+
+    //     // if(i-carpetLen>=0) pfix[i]-=pfix[i-carpetLen];
+        
+    // }
+    let all=0;sum=0;
+    for(let i=0;i<floor.length;++i){
+        all+=floor.charCodeAt(i) & 1;
+        sum+=floor.charCodeAt(i) & 1;
+        if(i>=carpetLen) sum-=floor.charCodeAt(i-carpetLen) & 1;
+        for(let j=0;j<=numCarpets;++j){
+            if(!j){
+                dp[i][j]=0; continue;
+            }
+            if(i<carpetLen){
+                // dp[i][j]=pfix[i]; continue;
+                dp[i][j]=sum; continue;
+
+            }
+            // dp[i][j]=Math.max(dp[i-1][j],dp[i-carpetLen][j-1]+sum);
+      dp[i][j] = Math.max(dp[i - 1][j], dp[i - carpetLen][j - 1] + (sum));
+
+        }
+
+    }
+    // return cnt - dp[floor.length -1][numCarpets];
+  return all - dp[floor.length - 1][numCarpets];
+
+// }
+    // console.log(dp)
+//     function solve(idx=0,num=0,prev=0,ones=0){
+//            if(num==numCarpets) {mx=Math.max(mx,ones); return mx;}
+//            if (idx>=floor.length){mx=Math.max(mx,(ones+(pfix[floor.length-1]-pfix[prev]))); return mx;}
+//         solve(idx+1,num,idx,ones);
+//         // include 
+//         let newOnes=idx-carpetLen>=0?(ones+pfix[idx]-pfix[idx-carpetLen]):pfix[idx];
+//          solve(idx+carpetLen,num+1,idx,newOnes);
+//     }
+//     solve();
+//     return cnt-mx;
+// };
+// // dp[i][num]=>at the ith index denotes the most no.of ones covered at the ith index when it's covered with num number of carpets
+// let n = floor.length;
+// // let dp = Array.from({ length: 1001 }, () => new Uint32Array(1001));
+// let dp=Array.from({length:floor.length},()=>Array(numCarpets+1).fill(0));
+
+//   let all = 0;
+//   let sum = 0;
+//   for (let i = 0; i < n; i++) {
+//     all += floor.charCodeAt(i) & 1;
+//     sum += floor.charCodeAt(i) & 1;
+//     if (i >= carpetLen) sum -= floor.charCodeAt(i - carpetLen) & 1;
+
+//     for (let j = 0; j <= numCarpets; ++j) {
+//       if (!j) {
+//         dp[i][j] = 0;
+//         continue;
+//       }
+//       if (i < carpetLen) {
+//         dp[i][j] =(pfix[i]);
+//         continue;
+//       }
+    //   dp[i][j] = Math.max(dp[i - 1][j], dp[i - carpetLen][j - 1] + (pfix[i]-pfix[i-carpetLen]));
+//     }
+//   }
+
+//   return cnt - dp[floor.length - 1][numCarpets];
+}
