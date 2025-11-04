@@ -1,0 +1,37 @@
+/**************************\U0001f60e**************************/
+function movesToStamp(stamp, target) {
+    const newTarget = new Array(target.length).fill('?').join('');
+    const res = [];
+    target = target.split('');
+
+    while (target.join('') !== newTarget) {
+        const ind = getIndex();
+        if (ind === -1) return [];
+        res.push(ind);
+    }
+
+    return res.reverse();
+
+    function getIndex() {
+        for (let i = 0; i < target.length; i++) {
+            let match = 0, j = 0;
+
+            for (; j < stamp.length; j++) {
+
+                if (target[i + j] === stamp[j]) match++;
+                else if (target[i + j] === '?') continue;
+                else break;
+            }
+            if (j === stamp.length && match !== 0) {
+
+                for (let k = 0; k < stamp.length; k++) {
+                    target[i + k] = '?'
+                }
+
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+};
