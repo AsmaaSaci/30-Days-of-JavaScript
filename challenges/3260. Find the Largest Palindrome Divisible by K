@@ -1,0 +1,41 @@
+const replaceAt = (str, index, value) => 
+    str = str.substring(0, index) + value + str.substring(index + value.length);
+
+const replaceWings = (str, value, offset) => 
+    str.length < offset ? str : replaceAt(replaceAt(str, offset - 1, value), str.length - offset, value);
+
+const largestPalindrome = (n, k) => {
+    const nines = '9'.repeat(n), mid = n - 1 >> 1;
+
+    if (k === 1 || k === 3 || k === 9) {
+        return nines;
+    }
+
+    if (k === 5) {
+        return replaceWings(nines, '5', 1);
+    }
+
+    if (k === 2) {
+        return replaceWings(nines, '8', 1);
+    }
+
+    if (k === 4) {
+        return replaceWings(largestPalindrome(n, 2), '8', 2);
+    }
+
+    if (k === 8) {
+        return replaceWings(largestPalindrome(n, 4), '8', 3);
+    }
+
+    if (k === 6) {
+        if (n < 3) {
+            return '6'.repeat(n);
+        }
+        return replaceAt(replaceWings(nines, '8', 1), mid, n % 2 ? '8' : '77');
+    }
+
+    if (n % 2) {
+        return replaceAt(nines, mid, ['7', '5', '7', '4', '6', '4'][(n >> 1) % 6]);
+    }
+    return replaceAt(nines, mid, ['99', '77', '77', '99', '44', '44'][(n >> 1) % 6]);
+};
