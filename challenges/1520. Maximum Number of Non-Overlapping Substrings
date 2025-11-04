@@ -1,0 +1,55 @@
+/**************************\U0001f60e**************************/
+function maxNumOfSubstrings(s) {
+    const hashMap = getCharRanges(s);
+    const hashMap2 = {};
+    updateOverLapped(s, hashMap);
+    Object.values(hashMap).forEach((val) => hashMap2[val.str] = val.range);
+    return getValidSubStrs(hashMap2);
+};
+
+
+const getCharRanges = (s) => {
+    const reverseS = s.split("").reverse().join("");
+    const result = {};
+    for (let i = 0; i < s.length; i++) {
+        const key = s[i];
+        if (result[key]) continue;
+        else result[key];
+        const start = s.indexOf(key);
+        const end = s.length - reverseS.indexOf(key);
+        const str = s.slice(start, end)
+        result[key] = {str, range: [start, end], updated: false};
+    }
+    return result;
+}
+
+const updateOverLapped = (s, hashMap) => {
+    for (let key in hashMap) {
+        const str = hashMap[key].str
+        let start = hashMap[key].range[0];
+        let end = hashMap[key].range[1];
+        hashMap[key].updated = true;
+        const updateRanges = [key];
+        for (let i = 0; i < str.length; i++) {
+            const key2 = str[i]
+            if (key2 === key) continue;
+            const range2 = hashMap[key2].range
+            start = Math.min(start, range2[0]);
+            end = Math.max(end, range2[1])
+            if (hashMap[key2].updated) updateRanges.push(key2)
+        }
+        const newStr = s.slice(start, end);
+        updateRanges.forEach((char) =>{
+           hashMap[char].str = newStr;
+            hashMap[char]. range = [start, end]
+        })
+    }
+}
+
+const getValidSubStrs = (hashMap) => {
+    const arr = Object.keys(hashMap);
+    return arr.filter((key, idx) => {
+        const key2 = arr[idx + 1];
+        return (!key2 || hashMap[key][1] <= hashMap[key2][0])
+    });    
+}
