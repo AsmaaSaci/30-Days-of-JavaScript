@@ -1,0 +1,51 @@
+function SwapScanner() {
+    this.swapCnt = 0
+    this.swapPair = {}
+}
+SwapScanner.prototype.addPair = function(w1, w2) {
+    if (this.swapPair[w2 + w1]) {
+        this.swapCnt++
+        this.swapPair[w2 + w1]--
+    }
+    else {
+        if (this.swapPair[w1 + w2] == undefined) {
+            this.swapPair[w1 + w2] = 1
+        } else {
+            this.swapPair[w1 + w2]++
+        }
+    }
+}
+/**
+ * @param {string} word1
+ * @param {string} word2
+ * @return {number}
+ */
+var minOperations = function(word1, word2) {
+    const N = word1.length
+    let dp = Array(N + 1).fill(Infinity) // dp[i + 1] store min operation count from word[0] to word[i]
+    dp[0] = 0
+    for (let i = 0; i < N; i++) { // loop all possible substring
+        for (let j = i; j < N; j++) {
+            let replaceCnt = 0, replaceCntReversed = 0
+            let swapCnt = 0, swapCntReversed = 0
+            let scanner = new SwapScanner(), scannerReversed = new SwapScanner()
+            for (let k = i; k < j + 1; k++) {
+                if (word1[k] != word2[k]) {
+                    replaceCnt++
+                    scanner.addPair(word1[k], word2[k])
+                }
+                if (word1[i + j - k] != word2[k]) {
+                    replaceCntReversed++
+                    scannerReversed.addPair(word1[i + j - k], word2[k])
+                }
+            }
+            const op = scanner.swapCnt + (replaceCnt - scanner.swapCnt * 2)
+            const opReversed = scannerReversed.swapCnt + (replaceCntReversed - scannerReversed.swapCnt * 2) + 1
+            const opDecided = Math.min(op, opReversed)
+            dp[j+1] = Math.min(dp[j+1], opDecided + dp[i+1-1])
+            // sum up the current result with calculcated result on the left e.g. dp[49+1] + opCnt(i=50~52)
+            // if this substring makes a better result, update dp[52+1]
+        }
+    }
+    return dp[N]
+};
