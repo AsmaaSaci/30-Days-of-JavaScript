@@ -1,0 +1,38 @@
+/**
+ * @param {string} s
+ * @return {boolean}
+ */
+var checkPartitioning = function(s) {
+    const len = s.length, lenMinus1 = len - 1
+
+    // start, end => whether s[start...end] is a palindrome
+    const memo = new Array(len)
+    for (const i of memo.keys())
+        memo[i] = []
+    
+    function isPal(start, end) {
+        if (start >= end)  return true
+        
+        const existing = memo[start][end]
+        if (existing !== undefined) {
+            return existing
+        }
+
+        if (s[start] === s[end]) {
+            return memo[start][end] = isPal(start + 1, end - 1)
+        } else {
+            return memo[start][end] = false
+        }
+    }
+    
+    
+    for (let i = 1; i < lenMinus1; i++) {
+        for (let j = i; j < lenMinus1; j++) {
+            if (isPal(0, i - 1) && isPal(i, j) && isPal(j + 1, lenMinus1))
+                return true
+        }
+    }
+
+
+    return false
+};
