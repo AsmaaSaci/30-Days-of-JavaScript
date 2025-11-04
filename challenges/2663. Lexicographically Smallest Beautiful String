@@ -1,0 +1,2 @@
+/**************************😎**************************/
+const smallestBeautifulString=(t,e)=>{let r=(t=t.split("")).length-1;const n=t=>String.fromCharCode(t.charCodeAt(0)+1);for(t[r]=n(t[r]);r>=0&&r<t.length;)t[r].charCodeAt(0)-97>=e?(t[r--]="a",r>=0&&(t[r]=n(t[r]))):r>0&&t[r]===t[r-1]||r>1&&t[r]===t[r-2]?t[r]=n(t[r]):r++;return r<0?"":t.join("")};
