@@ -1,0 +1,76 @@
+/**
+ * @param {string} s
+ * @return {string}
+ */
+function lexicographicallySmallestString(s) {
+  const n = s.length;
+  if (n < 2) return s;
+
+  // 1) char codes
+  const code = new Uint16Array(n);
+  for (let i = 0; i < n; i++) {
+    code[i] = s.charCodeAt(i);
+  }
+
+  // 2) adjacency table
+  const adj = Array.from({ length: n }, () => new Uint8Array(n));
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const d = Math.abs(code[i] - code[j]);
+      if (d === 1 || d === 25) {
+        adj[i][j] = adj[j][i] = 1;
+      }
+    }
+  }
+
+  // 3) DP1: removeDP[i][j]
+  const removeDP = Array.from({ length: n }, () => new Uint8Array(n));
+  function canRemoveAll(i, j) {
+    if (i > j) return true;
+    // odd length -> no
+    if (((j - i + 1) & 1) === 1) return false;
+    // memo?
+    if (removeDP[i][j] !== 0) return removeDP[i][j] === 2;
+
+    // try pairing i with k
+    for (let k = i + 1; k <= j; k += 2) {
+      if (
+        adj[i][k] &&
+        canRemoveAll(i + 1, k - 1) &&
+        canRemoveAll(k + 1, j)
+      ) {
+        removeDP[i][j] = 2;
+        return true;
+      }
+    }
+    removeDP[i][j] = 1;
+    return false;
+  }
+
+  // 4) DP2: bestDP[i]
+  const bestDP = new Array(n + 1).fill(null);
+  function buildBest(i) {
+    if (i >= n) return "";
+    if (bestDP[i] !== null) return bestDP[i];
+
+    // keep s[i]
+    let best = s[i] + buildBest(i + 1);
+
+    // remove pair (i, j)
+    for (let j = i + 1; j < n; j++) {
+      if (
+        adj[i][j] &&
+        (j === i + 1 || canRemoveAll(i + 1, j - 1))
+      ) {
+        const cand = buildBest(j + 1);
+        if (cand < best) best = cand;
+      }
+    }
+
+    bestDP[i] = best;
+    return best;
+  }
+
+  // 5) final answer
+  return buildBest(0);
+}
