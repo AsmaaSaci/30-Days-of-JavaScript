@@ -1,0 +1,60 @@
+/**
+ * @param {string} beginWord
+ * @param {string} endWord
+ * @param {string[]} wordList
+ * @return {string[][]}
+ */
+var findLadders = function (beginWord, endWord, wordList) {
+    // Checks if two words a and b are connected
+    function isConnected(a, b) {
+        let c = 0;
+        for (let i = 0; i < a.length && c < 2; i++) {
+            if (a[i] !== b[i]) c++;
+        }
+        return c === 1;
+    }
+
+    const wordSet = new Set(wordList);
+    const queue = [beginWord]; // ONLY stores all connected nodes
+    const nodesPerLevel = []; // stores connected nodes per level
+    let reached = false; // indidcates if we reached the endWord
+
+    // Finds nodes at each level that leads us from beginWord to endWord
+    while (queue.length && !reached) {
+        nodesPerLevel.push([...queue]);
+        const len = queue.length;
+
+        for (let i = 0; i < len && !reached; i++) {
+            const from = queue.shift();
+
+            for (const to of wordSet) {
+                if (!isConnected(from, to)) continue;
+                if (to === endWord) {
+                    reached = true;
+                    break;
+                } 
+                queue.push(to);
+                wordSet.delete(to);
+            }
+        }
+    }
+
+    // If there is no path found
+    if (!reached) return [];
+
+    // Construct the Shortest Paths from endWord
+    const ans = [[endWord]];
+    for (let level = nodesPerLevel.length - 1; level >= 0; level--) {
+        const len = ans.length; // no. of shortest paths till now
+        for (let i = 0; i < len; i++) { // for each path till now
+            const path = ans.shift();
+            const first = path[0]; // first word of current path
+
+            for (let word of nodesPerLevel[level]) { // for each word(node) and current level
+                if (!isConnected(first, word)) continue;
+                ans.push([word, ...path]);
+            }
+        }
+    }
+    return ans;
+};
