@@ -1,0 +1,39 @@
+let minimumTimeToInitialState = function (word, k) {
+    let n = word.length, z = zArray(word);
+    let startIndex = 0, coveredIndex = n, time = 0;
+
+    while (startIndex < n) {
+        coveredIndex -= k;
+        startIndex += k;
+        time++;
+        let zIndex = z[startIndex] || 0;
+        if (zIndex >= coveredIndex) return time;
+    }
+
+    return n;
+};
+
+function zArray(s) {
+    let n = s.length, z = Array(n).fill(0);
+
+    for (let i = 1, left = 0, right = 0; i < n; i++) {
+        if (i > right) {
+            left = right = i;
+            while (right < n && s[right] === s[right - left]) right++;
+            z[i] = right - left;
+            right--;
+        }
+
+        else {
+            if (z[i - left] + i <= right) z[i] = z[i - left];
+            else {
+                left = i;
+                while (right < n && s[right] === s[right - left]) right++;
+                z[i] = right - left;
+                right--;
+            }
+        }
+    }
+
+    return z;
+}
