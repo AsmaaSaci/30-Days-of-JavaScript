@@ -1,0 +1,33 @@
+/**
+ * @param {string} s
+ * @return {number}
+ */
+var countPalindromicSubsequences = function(s) {
+    // dp[i][j] number of palindromic subsequences from i to j
+    // if s[i] !== s[j] dp[i][j] = dp[i][j-1]+dp[i+1][j]-dp[i+1][j-1]
+    // if s[i] === s[j] and s[i] not in middle, consider both s[i] & s[j]  dp[i][j] =  2*dp[i+1][j-1] + 2
+    // if s[i] === s[j] and only one s[i] in middle, consider either s[i] & s[j]  dp[i][j] =  2*dp[i+1][j-1] + 1
+    // if s[i] === s[j] and multiple s[i] in middle, consider either s[i] & s[j]  dp[i][j] =  2*dp[i+1][j-1] -s[left+1][right-1] where left and right are the indices of the character in the middle of i & j
+    const len = s.length;
+    let dp = new Array(len).fill(0).map(() => new Array(len).fill(0));
+    const mod = (10**9)+7;
+    // dp[i][i] can be initialized to 1 as a single character is palindrome
+    for(let i=0; i<len; i++) dp[i][i] = 1;
+    for(let i=len-1; i>-1; i--) {
+        for(let j=i+1; j<len; j++) {
+            if(s[i] === s[j]) {
+                let left = i+1;
+                let right = j-1;
+                while(left<=right && s[i] !== s[left]) left++;
+                while(left<=right && s[i] !== s[right]) right--;
+                if(left>right) dp[i][j] = (2*dp[i+1][j-1])+2;
+                else if(left===right) dp[i][j] = (2*dp[i+1][j-1])+1;
+                else dp[i][j] = (2*dp[i+1][j-1])-dp[left+1][right-1];
+            } else {
+                dp[i][j] = dp[i][j-1]+dp[i+1][j]-dp[i+1][j-1];
+            }
+            dp[i][j] = ((dp[i][j]+mod)%mod);
+        }
+    }
+    return dp[0][len-1];
+}
