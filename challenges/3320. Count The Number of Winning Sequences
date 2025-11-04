@@ -1,0 +1,72 @@
+/**
+ * @param {string} s
+ * @return {number}
+ */
+var countWinningSequences = function(s) {
+    const modMe = 1e9 + 7
+    const len = s.length, lenP = 1 + len
+    const map = {
+        E: 0,
+        F: 1,
+        W: 2,
+    }
+    const alice = [...s].map(ch => map[ch])
+
+    function judge(a, b) {
+        if (a === b) return 0
+        if (a === 0) {
+            return b === 1 ? 1 : -1
+        }
+        if (a === 1) {
+            return b === 2 ? 1 : -1
+        }
+        if (a === 2) {
+            return b === 0 ? 1 : -1
+        }
+    }
+
+
+    // prevSymbol, fromI, rmg (can be negative)
+    const memo = new Array(4)
+    for (const i of memo.keys()) {
+        const row = memo[i] = new Array(len)
+        for (const j of row.keys())
+            row[j] = []
+    }
+    
+
+    const offset = len
+    function dp(prevSymbol, fromI, rmg) {
+        if (Math.abs(rmg) > len - fromI)    return 0
+
+        if (fromI === len) {
+            if (rmg === 0)  return 1
+            else    return 0
+        }
+        
+        const ext = memo[prevSymbol][fromI][rmg]
+        if (ext !== undefined)  return ext
+
+        let result = 0
+        const a = alice[fromI], nextI = 1 + fromI
+        for (let symbol = 0; symbol < 3; symbol++) {
+            if (symbol === prevSymbol)  continue
+
+            const score = judge(a, symbol)
+            const subresult = dp(symbol, nextI, rmg - score)
+            result = (result + subresult) % modMe
+        }
+
+        return memo[prevSymbol][fromI][rmg] = result
+    }
+
+
+    let result = 0
+    for (let rmg = 1; rmg < lenP; rmg++) {
+        const outcome = dp(3, 0, rmg)
+        result = (result + outcome) % modMe
+    }
+
+
+    return result
+};
