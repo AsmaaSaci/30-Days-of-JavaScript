@@ -1,0 +1,27 @@
+/**
+ * @param {string} s
+ * @param {string} t
+ * @return {boolean}
+ */
+function isRationalEqual(s, t) {
+    function toFloat(num) {
+        if (num.includes('(')) {
+            let [nonRepeating, repeating] = num.split('(');
+            repeating = repeating.slice(0, -1);
+            return parseFloat(expandRational(nonRepeating, repeating));
+        } else {
+            return parseFloat(num);
+        }
+    }
+
+    function expandRational(nonRepeating, repeating) {
+        let [integerPart, decimalPart = ''] = nonRepeating.split('.');
+        if (repeating) {
+            let expandedRepeating = repeating.repeat(20).slice(0, 20);
+            decimalPart += expandedRepeating;
+        }
+        return integerPart + '.' + decimalPart;
+    }
+
+    return toFloat(s) === toFloat(t);
+}
