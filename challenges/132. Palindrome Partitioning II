@@ -1,0 +1,22 @@
+/**
+ * @param {string} s
+ * @return {number}
+ */
+var minCut = function(s) {
+    const n = s.length;
+    const isPal = Array.from({ length: n }, () => Array(n).fill(false));
+    const cut = Array(n).fill(0);
+
+    for (let end = 0; end < n; end++) {
+        let min = end; // max cuts = end (cut before every character)
+        for (let start = 0; start <= end; start++) {
+            if (s[start] === s[end] && (end - start <= 1 || isPal[start + 1][end - 1])) {
+                isPal[start][end] = true;
+                min = start === 0 ? 0 : Math.min(min, cut[start - 1] + 1);
+            }
+        }
+        cut[end] = min;
+    }
+
+    return cut[n - 1];
+};
