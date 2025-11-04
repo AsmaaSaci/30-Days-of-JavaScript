@@ -1,0 +1,43 @@
+function numberOfWays(s, t, k) {
+  const MOD = 1e9 + 7;
+  const n = s.length;
+
+  if (!s || !t || k < 0) return 0;
+
+  // Create circular string once
+  const ss = s + s;
+
+  const first = ss.indexOf(t);
+  if (first === -1) return 0;
+
+  const zero_targets = first === 0 ? 1 : 0;
+
+  const period = ss.slice(1).indexOf(s) + 1;
+  const frequency = Math.floor(n / period);
+  const nonzero_targets = frequency - zero_targets;
+
+  const binPow = (a, b, mod) => {
+    let result = 1n;
+    a = BigInt(a);
+    b = BigInt(b);
+    mod = BigInt(mod);
+
+    while (b > 0n) {
+      if (b & 1n) {
+        result = (result * a) % mod;
+      }
+      a = (a * a) % mod;
+      b >>= 1n;
+    }
+    return Number(result);
+  };
+
+  const modN = MOD * n;
+  const power = binPow(n - 1, k, modN);
+  const sign = k % 2 === 0 ? 1 : -1;
+
+  const ways_0 = Math.floor((power + (n - 1) * sign) / n);
+  const ways_1 = Math.floor((power - sign) / n);
+
+  return ((zero_targets * ways_0 + nonzero_targets * ways_1) % MOD + MOD) % MOD;
+}
