@@ -1,0 +1,139 @@
+/**
+ * @param {string[]} words
+ * @return {number[]}
+ */
+class UnionFind {
+  constructor(size) {
+    this.parent = Array.from({ length: size }, (_, i) => i);
+    this.rank = Array(size).fill(1);
+    for (let i = 0; i < size; i++) {
+      this.parent[i] = i;
+    }
+  }
+  find(x) {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+  union(x, y) {
+    let rootX = this.find(x);
+    let rootY = this.find(y);
+
+    if (rootX !== rootY) {
+      if (this.rank[rootX] > this.rank[rootY]) {
+        this.parent[rootY] = rootX;
+      } else if (this.rank[rootX] < this.rank[rootY]) {
+        this.parent[rootX] = rootY;
+      } else {
+        this.parent[rootY] = rootX;
+        this.rank[rootX]++;
+      }
+    }
+  }
+}
+var groupStrings = function(words) {
+    const n = words.length
+    let map = new Map()
+    let uf = new UnionFind(n)
+    let found
+    for(let i = 0 ; i < n ; i++){
+        const w = words[i] 
+        if(w.length === 1){
+            if(found !== undefined){
+                let p1 = uf.find(found)
+                let p2 = uf.find(i)
+                uf.union(p1 , p2)
+            }else{
+                found = i
+            }
+        }
+        let mask = 0
+        for(let c of w){
+            mask = mask | (1 << (c.charCodeAt(0) - 97))
+        }
+        let c = map.get(mask) ?? []
+        c.push(i)
+        let p1 = uf.find(c[0])
+        let p2 = uf.find(i)
+        if(p1 !== p2){
+            uf.union(p1 , p2)
+        }
+        map.set(mask , c)
+    }
+
+    let seen = new Set()
+    let back = (mask) => {
+        if(seen.has(mask)) return
+        seen.add(mask)
+        if(!map.has(mask)) return 
+        let p1 = uf.find(map.get(mask)[0])
+
+        for(let i = 0 ; i < 26 ; i++){
+            if((mask >> i) & 1) continue
+            let m = mask
+            m = m | (1 << i)
+
+            if(map.has(m) && !seen.has(m)){
+                let a = map.get(m)
+                for(let j = 0 ; j < a.length ; j++){
+                    let p2 = uf.find(a[j])
+                
+                    if(p1 !== p2){
+                        uf.union(p1 , p2)
+                    }
+          
+                }
+                back(m)
+            }
+        }
+        for(let i = 0 ; i < 26 ; i++){
+            if((mask >> i) & 1){
+                let ma = mask & ~(1 << i);
+                if(map.has(ma) && !seen.has(ma)){
+                    let a = map.get(ma)
+                    for(let j = 0 ; j < a.length ; j++){
+                        let p2 = uf.find(a[j])
+        
+                        if(p1 !== p2){
+                            uf.union(p1 , p2)
+                        }
+
+                    }
+                    back(ma)
+                }
+                for(let j = 0; j < 26 ; j++){
+                    if((mask >> j) & 1) continue
+                    let tap = ma | (1 << j)
+                    if(map.has(tap) && !seen.has(tap)){
+                        let a = map.get(tap)
+                        for(let j = 0 ; j < a.length ; j++){
+                            let p2 = uf.find(a[j])
+            
+                            if(p1 !== p2){
+                                uf.union(p1 , p2)
+                            }
+
+                        }
+                        back(tap)
+                    }
+                }
+            }
+        }
+    }
+    let a = Array.from(map.keys()).sort((a,b)=>a.length - b.length)
+     for(let k of a){
+        back(k)
+    }
+    let grps = new Map()
+    let max = 0
+    for(let i = 0 ; i < n ; i++){
+        let p = uf.find(i)
+        let a = grps.get(p) ?? []
+        a.push(i)
+        max = Math.max(a.length , max)
+        grps.set(p , a)
+    }
+  
+    return [grps.size , max]
+};
