@@ -1,0 +1,42 @@
+var minCostGoodCaption = function(caption) {
+    let n = caption.length;
+    if (n < 3) return "";
+
+    let blocks = [];
+    if (n % 3 === 0) {
+        let k = n / 3;
+        while (k--) blocks.push(3);
+    } else if (n % 3 === 1) {
+        blocks.push(4);
+        n -= 4;
+        let k = n / 3;
+        while (k--) blocks.push(3);
+    } else {
+        blocks.push(5);
+        n -= 5;
+        let k = n / 3;
+        while (k--) blocks.push(3);
+    }
+
+    let res = [];
+    let idx = 0;
+
+    for (let b of blocks) {
+        let bestCost = Infinity, bestChar = null;
+        for (let c = 0; c < 26; c++) {
+            let cost = 0, charCode = 97 + c;
+            for (let k = 0; k < b; k++) {
+                cost += Math.abs(caption.charCodeAt(idx + k) - charCode);
+                if (cost > bestCost) break;
+            }
+            if (cost < bestCost) {
+                bestCost = cost;
+                bestChar = String.fromCharCode(charCode);
+            }
+        }
+        for (let k = 0; k < b; k++) res.push(bestChar);
+        idx += b;
+    }
+
+    return res.join("");
+};
