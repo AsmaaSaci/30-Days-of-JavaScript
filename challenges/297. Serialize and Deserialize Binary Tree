@@ -1,39 +1,61 @@
-var Codec = function() {};
+let MARKER = "M",
+    m = 1;
 
-Codec.prototype.serialize = function(root) {
-    if (!root) return "null";
-    let q = [root], res = [];
-    while (q.length) {
-        let node = q.shift();
-        if (node) {
-            res.push(node.val);
-            q.push(node.left);
-            q.push(node.right);
-        } else {
-            res.push("null");
-        }
+function serializeRec(node, stream) {
+    // Adding marker to stream if the node is null
+    if (node == null) {
+        stream.push(MARKER + m);
+        m++;
+        return stream;
     }
-    return res.join(",");
+    // Adding node to stream
+    stream.push(node.val);
+
+    // Doing a pre-order tree traversal for serialization
+    stream = serializeRec(node.left, stream);
+    return serializeRec(node.right, stream);
+}
+
+var serialize = function (root) {
+    let stream = [];
+    stream = serializeRec(root, stream);
+    return stream;
 };
 
-Codec.prototype.deserialize = function(data) {
-    if (data === "null") return null;
-    const arr = data.split(",");
-    let root = new TreeNode(parseInt(arr[0]));
-    let q = [root];
-    let i = 1;
-    while (q.length) {
-        let node = q.shift();
-        if (arr[i] !== "null") {
-            node.left = new TreeNode(parseInt(arr[i]));
-            q.push(node.left);
-        }
-        i++;
-        if (arr[i] !== "null") {
-            node.right = new TreeNode(parseInt(arr[i]));
-            q.push(node.right);
-        }
-        i++;
-    }
-    return root;
+/**
+ * Decodes your encoded data to tree.
+ *
+ * @param {string} data
+ * @return {TreeNode}
+ */
+
+
+function deserialize_helper(stream) {
+    // dequeue last element from list
+    let val = stream.pop();
+
+    // Return null when a marker is encountered
+    if (typeof val == "string" && val[0] == MARKER)
+        return null;
+
+    // Creating new Binary Tree Node for current value from stream
+    let node = new TreeNode(val);
+
+    // Doing a pre-order tree traversal for deserialization
+    node.left = deserialize_helper(stream);
+    node.right = deserialize_helper(stream);
+
+    // return node if it exists
+    return node;
+}
+
+var deserialize = function (stream) {
+    stream.reverse()
+    let node = deserialize_helper(stream)
+    return node
 };
+
+/**
+ * Your functions will be called as such:
+ * deserialize(serialize(root));
+ */
