@@ -1,0 +1,13 @@
+let isValid = function (code) {
+    if (code === 't') return false;
+
+    while (/<!\[CDATA\[.*?\]\]>/.test(code)) {
+        code = code.replace(/<!\[CDATA\[.*?\]\]>/g, 'c');
+    }
+
+    while (/<([A-Z]{1,9})>([^<]*)<\/(\1)>/.test(code)) {
+        code = code.replace(/<([A-Z]{1,9})>([^<]*)<\/(\1)>/g, 't');
+    }
+
+    return code === 't';
+}
