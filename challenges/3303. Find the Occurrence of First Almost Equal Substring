@@ -1,0 +1,62 @@
+/**
+ * @param {string} s
+ * @param {string} pattern
+ * @return {number}
+ */
+var minStartingIndex = function(s, pattern) {
+    // the Z function
+    function zf(s) {
+        const len = s.length
+        let low = 0, high = 0
+        const z = new Array(len)
+        z[0] = 0
+
+        for (let i = 1; i < len; i++) {
+            let outcome = 0
+
+            if (i < high) {
+                outcome = Math.min(high - i, z[i - low])
+            }
+
+            while (outcome + i < len && s[outcome] === s[outcome + i])
+                outcome++
+            
+            if (outcome + i > high) {
+                high = outcome + i
+                low = i
+            }
+            
+            z[i] = outcome
+        }
+
+        return z
+    }
+
+
+    const len = s.length, size = pattern.length,
+        total = 1 + len + size, lenM = len - 1
+    // construct 2 strings to get zf() results
+    const ps = pattern + '!' + s, 
+        r = [...pattern].reverse().join('') + '!' + [...s].reverse().join('')
+    const zps = zf(ps), zr = zf(r)
+
+
+    const sizeP = size + 1, sizeM = size - 1
+    const ub = total - sizeM
+    for (let i = sizeP; i < ub; i++) {
+        const j = i - sizeP
+        const outcome = zps[i]
+        if (outcome === size)   return j // needless to change character
+
+        // check if we can change 1 character to achieve that
+        const end = j + sizeM
+        const J = lenM - end
+        const I = J + sizeP
+        const OUTCOME = zr[I]
+        if (outcome + OUTCOME + 1 >= size)
+            return j
+    }
+
+
+    return -1
+};
