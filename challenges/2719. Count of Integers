@@ -1,0 +1,45 @@
+var count = function(num1, num2, min_sum, max_sum) {
+    const mod = 1e9 + 7;
+    let dp;
+
+    function solve(nums, n, tight, sum, minn, maxx) {
+        if (sum > maxx) return 0;
+        if (n === 0) {
+            return sum >= minn && sum <= maxx ? 1 : 0;
+        }
+        if (dp[n][tight][sum] !== -1) return dp[n][tight][sum];
+
+        let index = nums.length - n;
+        let ub = tight ? Number(nums[index]) : 9;
+        let ans = 0;
+
+        for (let i = 0; i <= ub; i++) {
+            let newTight = tight && (i === Number(nums[index])) ? 1 : 0;
+            ans = (ans + solve(nums, n - 1, newTight, sum + i, minn, maxx)) % mod;
+        }
+
+        dp[n][tight][sum] = ans;
+        return ans;
+    }
+
+   
+    dp = Array.from({ length: 25 }, () =>
+        Array.from({ length: 2 }, () => Array(250).fill(-1))
+    );
+    let ans2 = solve(num2, num2.length, 1, 0, min_sum, max_sum);
+
+    
+    dp = Array.from({ length: 25 }, () =>
+        Array.from({ length: 2 }, () => Array(250).fill(-1))
+    );
+    let ans1 = solve(num1, num1.length, 1, 0, min_sum, max_sum);
+
+    let ans = ((ans2 - ans1) % mod + mod) % mod;
+
+    
+    let sum = 0;
+    for (let ch of num1) sum += Number(ch);
+    if (sum >= min_sum && sum <= max_sum) ans = (ans + 1) % mod;
+
+    return ans;
+};
