@@ -1,0 +1,194 @@
+//#region Tensor
+/**
+ * @template TItem
+ */
+class Tensor {
+  /**
+   * @param {number} capacity The max capacity of the tensor
+   * @param {number[] | undefined} dimensions
+   */
+  constructor(capacity, dimensions) {
+    /**
+     * @private
+     * @type {TItem[]}
+     */
+    this._data = Array(capacity).fill();
+
+    /**
+     * @private
+     * @type {number[]}
+     */
+    this._dimensions;
+
+    /**
+     * @private
+     * @type {number}
+     */
+    this._total = 0;
+
+    this.resize(dimensions);
+
+    /**
+     * An array of indices whole sole purpose is to avoid recreating array for some operations such as **forEach**
+     * @type {number[]}
+     * @private
+     */
+    this.__indices = [];
+  }
+
+  /**
+   * @param {...number} dimensions
+   */
+  resize(...dimensions) {
+    this._dimensions = dimensions;
+    if (!this._dimensions?.length) this._total = 0;
+    else {
+      this._total = 1;
+      for (let i = 0; i < this._dimensions.length; i++)
+        this._total *= this._dimensions[i];
+    }
+  }
+
+  /**
+   * @param {TItem} value
+   */
+  fill(value) {
+    if (!this._dimensions)
+      throw `Call "resize" to initialize the dimensions of the Tensor first.`;
+    this._data.fill(value, 0, this._total);
+  }
+
+  /**
+   * @private
+   * @param {number[]} indices
+   */
+  _getFlattenIndex(indices) {
+    if (!this._dimensions)
+      throw `Call "resize" to initialize the dimensions of the Tensor first.`;
+    let n = indices.length;
+    if (n != this._dimensions.length)
+      throw `The number of dimensions does not match`;
+    if (!n) return 0;
+
+    if (indices[0] < 0 || indices[0] >= this._dimensions[0])
+      throw `The ${0}-th dimension should be in range [0, ${
+        this._dimensions[0]
+      })`;
+
+    let result = indices[0];
+    for (let i = 1; i < n; i++) {
+      if (indices[i] < 0 || indices[i] >= this._dimensions[i])
+        throw `The ${i}-th dimension should be in range [0, ${this._dimensions[i]})`;
+      result = result * this._dimensions[i] + indices[i];
+    }
+
+    return result;
+  }
+
+  /**
+   * @param  {...number} indices
+   */
+  at(...indices) {
+    return this._data[this._getFlattenIndex(indices)];
+  }
+
+  /**
+   * @param  {TItem} value
+   * @param  {...number} indices
+   */
+  set(value, ...indices) {
+    this._data[this._getFlattenIndex(indices)] = value;
+  }
+
+  /**
+   * @param  {TItem} value
+   * @param  {...number} indices
+   */
+  setMin(value, ...indices) {
+    let flattenIndex = this._getFlattenIndex(indices);
+    this._data[flattenIndex] = Math.min(value, this._data[flattenIndex]);
+  }
+
+  /**
+   * WARNING: Don't mutate indices array
+   * @param {(value: TItem, indices: number[], set: (value: TItem) => void) =>} cb
+   */
+  forEach(cb) {
+    if (!this._dimensions)
+      throw `Call "resize" to initialize the dimensions of the Tensor first.`;
+
+    const indices = this.__indices;
+    const d = this._dimensions.length;
+
+    while (indices.length < d) indices.push(0);
+    indices.fill(0, 0, d);
+
+    let i = 0;
+    const set = (value) => {
+      this._data[i] = value;
+    };
+
+    cb(this._data[0], indices, set);
+
+    for (i = 1; i < this._total; i++) {
+      let j = d;
+      do {
+        j--;
+        indices[j]++;
+        if (indices[j] == this._dimensions[j]) indices[j] = 0;
+      } while (!indices[j]);
+
+      cb(this._data[i], indices, set);
+    }
+  }
+}
+//#endregion
+
+let pal = new Tensor(40000);
+let dp = new Tensor(20000);
+
+/**
+ * @param {string} s
+ * @param {number} k
+ * @return {number}
+ */
+var minimumChanges = function (s, k) {
+  let n = s.length;
+  let h = n >> 1;
+  pal.resize(n, n);
+  pal.fill(n);
+
+  dp.resize(n, k);
+  dp.fill(n);
+
+  let c, l, r, d;
+  for (let i = 0; i < n; i++) {
+    pal.set(n, i, i);
+
+    for (d = 1; d <= h; d++) {
+      c = 0;
+      for (l = i, r = i + d; l >= 0 && r + d <= n; l -= d, r += d) {
+        for (let j = 0; j < d; j++) if (s[l + j] != s[r + j]) c++;
+        pal.setMin(c, l, r + d - 1);
+      }
+
+      c = 0;
+      for (l = i - d, r = i + d; l >= 0 && r + d <= n; l -= d, r += d) {
+        for (let j = 0; j < d; j++) if (s[l + j] != s[r + j]) c++;
+        pal.setMin(c, l, r + d - 1);
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    dp.set(pal.at(0, i), i, 0);
+
+    for (let j = 1; j < k; j++) {
+      for (let l = 0; l < i; l++) {
+        dp.setMin(dp.at(l, j - 1) + pal.at(l + 1, i), i, j);
+      }
+    }
+  }
+
+  return dp.at(n-1, k-1);
+};
