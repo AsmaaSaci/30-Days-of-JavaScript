@@ -1,0 +1,23 @@
+/**
+ * @param {string} s
+ * @return {number}
+ */
+var deleteString = function(s) {
+    const n = s.length;
+    const dp = new Array(n).fill(1);
+    const kmp = new Array(n);
+    kmp[0] = 0;
+    for (let from = n - 2; from >= 0; from--) {
+        let len = 0;
+        for (let to = from + 1; to < n; to++) {
+            while (len && s[from + len] !== s[to])
+                len = kmp[len - 1];
+            if (s[from + len] === s[to])
+                len++;
+            if (len * 2 === to - from + 1)
+                dp[from] = Math.max(dp[from], 1 + dp[from + len]);
+            kmp[to - from] = len;
+        }
+    }
+    return dp[0];
+};
