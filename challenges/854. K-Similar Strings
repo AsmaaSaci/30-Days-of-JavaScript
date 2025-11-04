@@ -1,0 +1,22 @@
+var kSimilarity = function (s1, s2) {
+    if (s1 === s2) return 0;
+    const q = [[s1, 0]], seen = new Set([s1]);
+
+    while (q.length) {
+        const [curr, step] = q.shift();
+        if (curr === s2) return step;
+
+        let i = 0;
+        while (curr[i] === s2[i]) i++;
+
+        for (let j = i + 1; j < curr.length; j++) {
+            if (curr[j] === s2[i] && curr[j] !== s2[j]) {
+                const next = curr.slice(0, i) + curr[j] + curr.slice(i + 1, j) + curr[i] + curr.slice(j + 1);
+                if (!seen.has(next)) {
+                    seen.add(next);
+                    q.push([next, step + 1]);
+                }
+            }
+        }
+    }
+};
