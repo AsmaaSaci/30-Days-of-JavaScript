@@ -1,0 +1,14 @@
+/**************************\U0001f60e**************************/
+function isTransformable(s, t) {
+    const a = Array.from({ length: 10 }, () => []);
+    for (let i = s.length - 1; i >= 0; i--) a[s[i]].push(i);
+    for (let i = 0; i < t.length; i++) {
+        const d = t[i];
+        if (!a[d].length) return false;
+        const idx = a[d].pop();
+        for (let j = 0; j < d; j++) {
+            if (a[j].length && a[j][a[j].length - 1] < idx) return false;
+        }
+    }
+    return true;
+}
