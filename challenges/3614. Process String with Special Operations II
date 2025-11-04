@@ -1,0 +1,37 @@
+/**
+ * @param {string} s
+ * @param {number} k
+ * @return {character}
+ */
+var processStr = function(s, k) {
+    let maxLength = 0;
+    for (const ch of s) {
+        if (ch === '*') {
+            if (maxLength > 0) maxLength--;
+        } else if (ch === '#') {
+            if (maxLength > 0) maxLength *= 2;
+        } else if (ch !== '%') {
+            maxLength++;
+        }
+    }
+    if (k >= maxLength) return '.';
+
+    let pos = k;   let Lent = maxLength; 
+    for (let i = s.length - 1; i >= 0; i--) {
+        const ch = s[i];
+        if (ch === '*') {
+            if (pos >= Lent) return '.';
+            Lent++;
+        } else if (ch === '#') {
+            const half = Lent / 2;
+            if (pos >= half) pos -= half
+            Lent = half;
+        } else if (ch === '%') {
+            pos = Lent - 1 - pos;
+        } else {
+            if (pos === Lent - 1) return ch;
+            Lent--;
+        }
+    }
+    return '.'; 
+};
