@@ -1,0 +1,16 @@
+ let ans=0;
+ function f(root){
+    if(!root)return [true,0,Infinity,-Infinity];
+    let left = f(root.left);
+    let right = f(root.right);
+    if(left[0]&&right[0]&&(left[3]<root.val)&&(right[2]>root.val)){
+        ans = Math.max(ans,left[1]+right[1]+root.val);
+        return [1,left[1]+right[1]+root.val,Math.min(root.val,left[2]),Math.max(root.val,right[3])];
+    }
+    return [0,0,0,0];
+ }
+var maxSumBST = function(root) {
+    ans = 0;
+    f(root)
+    return ans;
+};
