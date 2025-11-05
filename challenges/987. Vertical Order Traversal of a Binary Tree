@@ -1,0 +1,39 @@
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+/**
+ * @param {TreeNode} root
+ * @return {number[][]}
+ */
+var verticalTraversal = function(root) {
+    if (!root) return [];
+
+    let columnMap = new Map(); // col -> array of [row, val]
+    let queue = [[root, 0, 0]]; // [node, row, col]
+
+    while (queue.length) {
+        let [node, row, col] = queue.shift();
+
+        if (!columnMap.has(col)) columnMap.set(col, []);
+        columnMap.get(col).push([row, node.val]);
+
+        if (node.left) queue.push([node.left, row + 1, col - 1]);
+        if (node.right) queue.push([node.right, row + 1, col + 1]);
+    }
+
+    let sortedCols = Array.from(columnMap.keys()).sort((a, b) => a - b);
+    let result = [];
+
+    for (let col of sortedCols) {
+        let nodes = columnMap.get(col);
+        nodes.sort((a, b) => a[0] - b[0] || a[1] - b[1]); // we sort by row, then value
+        result.push(nodes.map(x => x[1]));
+    }
+
+    return result;
+};
