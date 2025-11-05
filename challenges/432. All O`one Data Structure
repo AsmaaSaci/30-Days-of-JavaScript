@@ -1,0 +1,118 @@
+
+function Node(freq){
+    this.keys = new Set();
+    this.freq = freq;
+    this.next = this.prev = null;
+}
+function DQ(){
+    this.head = new Node(-1);
+    this.tail = new Node(Infinity);
+    this.head.next = this.tail;
+    this.tail.prev = this.head;
+}
+
+
+
+var AllOne = function() {
+    this.freqNodes = {};
+    this.freqBuckets = new DQ();
+    this.wordFreq = {};
+};
+
+
+AllOne.prototype.decrementFreq = function(freq, key){
+    const { freqNodes } = this;
+
+    if(freq === 0) return;
+    const node = freqNodes[freq];
+    node.keys.delete(key);
+
+    if(node.keys.size > 0) return;
+
+    const prev = node.prev;
+    const next = node.next;
+    prev.next = next;
+    next.prev = prev;
+    delete freqNodes[freq];
+}
+
+AllOne.prototype.incrementFreq = function(freq, key, prev){
+    const { freqNodes } = this;
+    if(freq === 0) return;
+    let node = freqNodes[freq];
+    if(node){
+        node.keys.add(key);
+        return;
+    }
+    node = new Node(freq);
+    node.keys.add(key);
+    freqNodes[freq] = node;
+
+    node.prev = prev;
+    node.next = prev.next;
+    prev.next = node;
+    node.next.prev = node;
+}
+
+/** 
+ * @param {string} key
+ * @return {void}
+ */
+AllOne.prototype.inc = function(key) {
+    const { freqBuckets, freqNodes, wordFreq } = this;
+    const pf = wordFreq[key] || 0;
+    const cf = pf+1;
+    wordFreq[key] = cf;
+    
+    
+    this.incrementFreq(cf, key, freqNodes[pf] ?? freqBuckets.head);
+    this.decrementFreq(pf, key);
+};
+
+/** 
+ * @param {string} key
+ * @return {void}
+ */
+AllOne.prototype.dec = function(key) {
+    const { freqBuckets, freqNodes, wordFreq } = this;
+    const pf = wordFreq[key] || 0;
+    const cf = pf-1;
+    if(cf > 0) wordFreq[key] = cf;
+    else delete wordFreq[key];
+   
+    this.incrementFreq(cf, key, freqNodes[pf] ? freqNodes[pf].prev : freqBuckets.head);
+    this.decrementFreq(pf, key);
+};
+
+/**
+ * @return {string}
+ */
+AllOne.prototype.getMaxKey = function() {
+    const { freqBuckets } = this;
+    const maxNode = freqBuckets.tail.prev;
+    
+    if(maxNode.keys.size === 0) return '';
+    const iterator = maxNode.keys.keys();
+    return iterator.next().value;
+};
+
+/**
+ * @return {string}
+ */
+AllOne.prototype.getMinKey = function() {
+    const { freqBuckets } = this;
+    const minNode = freqBuckets.head.next;
+
+    if(minNode.keys.size === 0) return '';
+    const iterator = minNode.keys.keys();
+    return iterator.next().value;
+};
+
+/** 
+ * Your AllOne object will be instantiated and called as such:
+ * var obj = new AllOne()
+ * obj.inc(key)
+ * obj.dec(key)
+ * var param_3 = obj.getMaxKey()
+ * var param_4 = obj.getMinKey()
+ */
