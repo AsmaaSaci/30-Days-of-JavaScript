@@ -1,0 +1,17 @@
+function waysToReachStair(k) {
+	let result = 0;
+	const stack = [[1, -1, 0]];
+	while (stack.length > 0) {
+		const [stair, prevJump, jump] = stack.pop();
+		if (stair === k) result++;
+		if (stair > 0 && prevJump !== jump) stack.push([stair - 1, jump, jump]);
+		if (stair + 2 ** jump > k + 1) continue;
+		stack.push([stair + 2 ** jump, jump, jump + 1]);
+	}
+	return result;
+}
+
+// run it from k = 0 to k = 200 and observe the results
+for (let k = 0; k < 200; k++) {
+	console.log(`${k}\t${waysToReachStair(k)}`);
+}
