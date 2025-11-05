@@ -1,0 +1,105 @@
+class Node {
+    constructor(lx = 0, rx = 0) {
+        this.is_lazy = false;
+        this.lazy = 0;
+        this.sum = 0;
+        this.lx = lx;
+        this.rx = rx;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class SegTree {
+
+    constructor() {
+        this.root = new Node(0, 1e9);
+    }
+
+    propagate(node) {
+        
+        if (!node || !node.is_lazy)
+            return;
+
+        node.sum = (node.rx - node.lx) * node.lazy;
+        if (node.rx - node.lx > 1) {
+
+            if (!node.left) 
+                node.left = new Node(node.lx, (node.lx + node.rx) >> 1);
+
+            if (!node.right) 
+                node.right = new Node((node.lx + node.rx) >> 1, node.rx);
+
+            node.left.is_lazy = true;
+            node.right.is_lazy = true;
+
+            node.left.lazy = node.lazy;
+            node.right.lazy = node.lazy;
+
+        }
+
+        node.is_lazy = false;
+        node.lazy = 0;
+    }
+
+    update(l, r, val, node = this.root) {
+        
+        if (!node) 
+            return;
+
+        this.propagate(node);
+
+        if (l >= node.rx || r <= node.lx) 
+            return;
+
+        if (l <= node.lx && r >= node.rx) {
+            node.lazy = val;
+            node.is_lazy = true;
+
+            this.propagate(node);
+            return;
+        }
+
+        if (!node.left)
+            node.left = new Node(node.lx, (node.lx + node.rx) >> 1);
+
+        if (!node.right)
+            node.right = new Node((node.lx + node.rx) >> 1, node.rx);
+
+        this.update(l, r, val, node.left);
+        this.update(l, r, val, node.right);
+
+        node.sum = node.left.sum + node.right.sum;
+    }
+
+    query(l, r, node = this.root) {
+
+        if (!node || l >= node.rx || r <= node.lx)
+            return 0;
+
+        this.propagate(node);
+
+        if (l <= node.lx && r >= node.rx) 
+            return node.sum;
+
+        return this.query(l, r, node.left) + this.query(l, r, node.right);
+    }
+}
+
+class RangeModule {
+    constructor() {
+        this.seg_tree = new SegTree();
+    }
+
+    addRange(left, right) {
+        this.seg_tree.update(left, right, 1);
+    }
+
+    queryRange(left, right) {
+        return this.seg_tree.query(left, right) == right - left;
+    }
+
+    removeRange(left, right) {
+        this.seg_tree.update(left, right, 0);
+    }
+}
