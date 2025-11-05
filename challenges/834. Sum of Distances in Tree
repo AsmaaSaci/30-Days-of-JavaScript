@@ -1,0 +1,38 @@
+function sumOfDistancesInTree(n, edges) {
+    let graph = [], answer = [], count = [];
+
+    for (let i = 0; i < n; ++i) {
+        graph.push([]);
+        count.push(1);
+        answer.push(0);
+    }
+
+    for (let edge of edges) {
+        graph[edge[0]].push(edge[1]);
+        graph[edge[1]].push(edge[0]);
+    }
+
+    depthFirstSearch(0, -1);
+    depthFirstSearch2(0, -1);
+
+    return answer;
+
+    function depthFirstSearch(node, parent) {
+        for (let child of graph[node]) {
+            if (child !== parent) {
+                depthFirstSearch(child, node);
+                count[node] = count[node] + count[child];
+                answer[node] = answer[node] + answer[child] + count[child];
+            }
+        }
+    }
+
+    function depthFirstSearch2(node, parent) {
+        for (let child of graph[node]) {
+            if (child !== parent) {
+                answer[child] = answer[node] - count[child] + n - count[child];
+                depthFirstSearch2(child, node);
+            }
+        }
+    }
+}
