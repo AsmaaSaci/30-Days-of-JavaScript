@@ -1,0 +1,26 @@
+function zigZagArrays(n, l, r) {
+    const MOD = 1000000007n;
+    const m = r - l + 1;
+    let dp = Array(m).fill(1n);
+
+    for (let step = 1; step < n; step++) {
+        const prefix = Array(m + 1).fill(0n);
+
+        for (let i = 0; i < m; i++) {
+            prefix[i + 1] = (prefix[i] + dp[i]) % MOD;
+        }
+
+        const newDp = Array(m).fill(0n);
+
+        for (let i = 0; i < m; i++) {
+            const idx = m - 1 - i;
+            newDp[i] = prefix[idx] % MOD;
+        }
+
+        dp = newDp;
+    }
+
+    let total = 0n;
+    for (const v of dp) total = (total + v) % MOD;
+    return Number((total * 2n) % MOD);
+}
