@@ -1,0 +1,15 @@
+/**
+ * @param {number} targetX
+ * @param {number} targetY
+ * @return {boolean}
+ */
+function gcd(x, y){
+    if (y===0)
+        return x;
+    return gcd(y, x%y);
+}
+
+var isReachable = function(targetX, targetY) {
+    let gc = gcd(targetX,targetY);
+    return (gc&(gc-1))==0;
+};
