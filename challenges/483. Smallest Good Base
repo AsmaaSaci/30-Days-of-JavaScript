@@ -1,0 +1,18 @@
+let smallestGoodBase = function (n) {
+    n = BigInt(n);
+    let compute = (base, len) => (base ** BigInt(len) - 1n) / (base - 1n);
+
+    for (let len = BigInt(Math.floor(Math.log2(Number(n))) + 1); len >= 2n; len--) {
+        let low = 2n, high = n;
+
+        while (low <= high) {
+            let mid = (low + high) / 2n;
+            let sum = compute(mid, len);
+            if (sum === n) return mid.toString();
+            else if (sum < n) low = mid + 1n;
+            else high = mid - 1n;
+        }
+    }
+
+    return (n - 1n).toString();
+}
