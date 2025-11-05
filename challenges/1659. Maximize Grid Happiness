@@ -1,0 +1,92 @@
+var getMaxGridHappiness = function(m, n, introvertsCount, extrovertsCount) {
+    const maxPeople = introvertsCount + extrovertsCount;
+    const states = [];
+    const stateCells = [];
+    const cntI = [];
+    const cntE = [];
+    const baseRow = [];
+
+    function gen(idx, arr) {
+        if (idx === n) {
+            let total = 0, ic = 0, ec = 0;
+            for (let j = 0; j < n; j++) {
+                const v = arr[j];
+                if (v === 1) { ic++; total += 120; }
+                else if (v === 2) { ec++; total += 40; }
+            }
+            if (ic + ec <= maxPeople) {
+                let mask = 0;
+                for (let j = n - 1; j >= 0; j--) mask = mask * 3 + arr[j];
+                states.push(mask);
+                stateCells.push(arr.slice());
+                cntI.push(ic);
+                cntE.push(ec);
+                baseRow.push(total);
+            }
+            return;
+        }
+        arr[idx] = 0; gen(idx + 1, arr);
+        arr[idx] = 1; gen(idx + 1, arr);
+        arr[idx] = 2; gen(idx + 1, arr);
+        arr[idx] = 0;
+    }
+    gen(0, new Array(n).fill(0));
+    const K = states.length;
+
+    const rowScore = new Array(K).fill(0);
+    for (let s = 0; s < K; s++) {
+        let sc = baseRow[s];
+        const cells = stateCells[s];
+        for (let j = 1; j < n; j++) {
+            const a = cells[j], b = cells[j - 1];
+            if (a && b) {
+                sc += (a === 1 ? -30 : 20) + (b === 1 ? -30 : 20);
+            }
+        }
+        rowScore[s] = sc;
+    }
+
+    const trans = Array.from({ length: K }, () => new Array(K).fill(0));
+    for (let p = 0; p < K; p++) {
+        for (let c = 0; c < K; c++) {
+            let sc = 0;
+            const A = stateCells[p], B = stateCells[c];
+            for (let j = 0; j < n; j++) {
+                if (A[j] && B[j]) {
+                    sc += (A[j] === 1 ? -30 : 20) + (B[j] === 1 ? -30 : 20);
+                }
+            }
+            trans[p][c] = sc;
+        }
+    }
+
+    let zeroIndex = -1;
+    for (let i = 0; i < K; i++) if (states[i] === 0) { zeroIndex = i; break; }
+    if (zeroIndex === -1) return 0;
+
+    const dp = Array.from({ length: m + 1 }, () =>
+        Array.from({ length: K }, () =>
+            Array.from({ length: introvertsCount + 1 }, () =>
+                new Array(extrovertsCount + 1).fill(null)
+            )
+        )
+    );
+
+    function dfs(r, prev, iLeft, eLeft) {
+        if (r === m) return 0;
+        const memo = dp[r][prev][iLeft][eLeft];
+        if (memo !== null) return memo;
+        let best = -Infinity;
+        for (let c = 0; c < K; c++) {
+            const needI = cntI[c], needE = cntE[c];
+            if (needI <= iLeft && needE <= eLeft) {
+                const val = rowScore[c] + trans[prev][c] + dfs(r + 1, c, iLeft - needI, eLeft - needE);
+                if (val > best) best = val;
+            }
+        }
+        dp[r][prev][iLeft][eLeft] = best;
+        return best;
+    }
+
+    return dfs(0, zeroIndex, introvertsCount, extrovertsCount);
+};
