@@ -1,0 +1,35 @@
+// 21:50
+// Approach: BT
+// TC: O(26^(n/2))
+// SC: O(n/2)
+/**
+ * @param {string} s
+ * @param {string} target
+ * @return {string}
+ */
+var lexPalindromicPermutation = function(s, target) {
+    const S=s,T=target;
+    const cnt={};
+    for(const c of S) cnt[c]=(cnt[c]||0)+1;
+    const odds=Object.keys(cnt).filter(c=>cnt[c]&1).join('');
+    if(odds.length>1) return '';
+    for(const c of Object.keys(cnt)) cnt[c]=Math.floor(cnt[c]/2);
+    let res='';
+    bt(0,'',true);
+    return res;
+    function bt(i,cur,tight){
+        if(i===Math.floor(S.length/2)){
+            const cand=cur+odds+cur.split('').reverse().join('');
+            if(cand>T) res=cand;
+            return;
+        }
+        for(const c of Object.keys(cnt).sort((a,b)=>a.localeCompare(b))){
+            if(cnt[c]===0) continue;
+            if(tight&&c<T[i]) continue;
+            cnt[c]-=1;
+            bt(i+1,cur+c,tight&&c===T[i]);
+            cnt[c]+=1;
+            if(res!=='') return;
+        }
+    }
+};
