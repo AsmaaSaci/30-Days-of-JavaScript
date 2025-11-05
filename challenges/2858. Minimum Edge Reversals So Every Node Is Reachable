@@ -1,0 +1,48 @@
+/**
+ * @param {number} n
+ * @param {number[][]} edges
+ * @return {number[]}
+ */
+var minEdgeReversals = function(n, edges) {
+    const ins = new Array(n).fill(null).map(_ => []);
+    const outs = new Array(n).fill(null).map(_ => []);
+    
+    for (let i = 0; i < edges.length; i++) {
+        ins[edges[i][1]].push(edges[i][0])
+        outs[edges[i][0]].push(edges[i][1])
+    }
+    
+    const vals = new Array(n).fill(null).map(_ => ({}));
+        
+    const calculate = (node, except) => {
+        let total = 0;
+
+        for (const from of ins[node]) {
+            if (from === except) {
+                continue;
+            }
+
+            if (typeof vals[node][from] === 'undefined') {
+                vals[node][from] = calculate(from, node) + 1;
+            }
+
+            total += vals[node][from];
+        }
+        
+        for (const to of outs[node]) {
+            if (to === except) {
+                continue;
+            }
+
+            if (typeof vals[node][to] === 'undefined') {
+                vals[node][to] = calculate(to, node);
+            }
+
+            total += vals[node][to];
+        }
+        
+        return total;
+    }
+    
+    return new Array(n).fill(null).map((_, i) => calculate(i, null))
+};
