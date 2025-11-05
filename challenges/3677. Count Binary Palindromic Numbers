@@ -1,0 +1,59 @@
+let dp = [], built = false;
+
+function bit(num) {
+    for (let i = 63; i >= 0; i--) {
+        const mask = 1n << BigInt(i);
+        if ((num & mask) !== 0n) return i;
+    }
+
+    return -1;
+}
+
+function makePal(p, len) {
+    let pal = p, q = (len % 2 === 0) ? p : (p >> 1n);
+    while (q > 0n) {
+        pal = (pal << 1n) | (q & 1n);
+        q >>= 1n;
+    }
+
+    return pal;
+}
+
+function countBinaryPalindromes(nInput) {
+    const n = BigInt(nInput);
+
+    if (!built) {
+        dp = Array(56).fill(0);
+        dp[1] = 1; dp[2] = 1;
+        for (let i = 3; i <= 55; i++) dp[i] = 2 * dp[i - 2];
+        built = true;
+    }
+
+    const maxbit = bit(n);
+    if (maxbit === -1) return 1;
+    const len = maxbit + 1;
+
+    let count = 1n;
+    for (let i = 1; i < len; i++) count += BigInt(dp[i]);
+
+    const half = Math.floor((len + 1) / 2);
+    const start = 1n << BigInt(half - 1);
+    const end = (1n << BigInt(half)) - 1n;
+
+    let lo = start, hi = end, best = start - 1n;
+
+    while (lo <= hi) {
+        const mid = (lo + hi) >> 1n;
+        const pal = makePal(mid, len);
+
+        if (pal <= n) {
+            best = mid;
+            lo = mid + 1n;
+        }
+
+        else hi = mid - 1n;
+    }
+
+    if (best >= start) count += best - start + 1n;
+    return Number(count);
+}
