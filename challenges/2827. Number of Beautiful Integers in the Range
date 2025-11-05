@@ -1,0 +1,52 @@
+let dp;
+function f(s, i, strict, mod, even, odd, k) {
+    if (i >= s.length) {
+        return (even === odd) && (mod === 0) ? 1 : 0;
+    }
+    if (dp[i][strict ? 1 : 0][mod][even][odd] !== -1) return dp[i][strict ? 1 : 0][mod][even][odd];
+    
+    let val = 0;
+    let limit = strict ? parseInt(s[i]) : 9;
+
+    for (let digit = 0; digit <= limit; digit++) {
+        let newStrict = strict && (digit === limit);
+        let newMod = (mod * 10 + digit) % k;
+        let newEven = even + (digit % 2 === 0 ? 1 : 0);
+        let newOdd = odd + (digit % 2 !== 0 ? 1 : 0);
+
+        if (digit === 0 && even === 0 && odd === 0) {
+            val += f(s, i + 1, newStrict, mod, even, odd, k);
+        } else {
+            val += f(s, i + 1, newStrict, newMod, newEven, newOdd, k);
+        }
+    }
+
+    return dp[i][strict ? 1 : 0][mod][even][odd] = val;
+}
+
+/**
+ * @param {number} low
+ * @param {number} high
+ * @param {number} k
+ * @return {number}
+ */
+var numberOfBeautifulIntegers = function (low, high, k) {
+    const getBeautifulCount = (numStr) => {
+        let n = numStr.length;
+        dp = Array.from({ length: n + 1 }, () => 
+            Array.from({ length: 2 }, () => 
+                Array.from({ length: k }, () => 
+                    Array.from({ length: 21 }, () => 
+                        Array(21).fill(-1)
+                    )
+                )
+            )
+        );
+        return f(numStr, 0, true, 0, 0, 0, k);
+    };
+
+    let countHigh = getBeautifulCount(high.toString());
+    let countLow = getBeautifulCount((low - 1).toString());
+
+    return countHigh - countLow;
+}; 
