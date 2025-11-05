@@ -1,0 +1,40 @@
+const modularExponentiation = (base, exponent, modulus) => {
+	if (modulus === 1n) return 0n;
+	let result = 1n;
+	base = base % modulus;
+	while (exponent > 0n) {
+		if (exponent % 2n === 1n) {
+			result = (result * base) % modulus;
+		}
+		exponent = exponent >> 1n;
+		base = (base * base) % modulus;
+	}
+	return result;
+};
+const modularMultiplicativeInverse = (number, modulus) => {
+	return modularExponentiation(number, modulus - 2n, modulus);
+};
+const waysToBuildRooms = (prevRoom) => {
+	const modulus = 1_000_000_007n;
+	const numRooms = prevRoom.length;
+	const roomTree = Array.from({ length: numRooms }, () => []);
+	let factorialArrangements = 1n;
+	for (let i = 1n; i < numRooms; i++) {
+		roomTree[prevRoom[i]].push(i);
+		factorialArrangements = (factorialArrangements * i) % modulus;
+	}
+	let totalSubtreeArrangements = 1n;
+	const dfsGetSubtreeSize = (currentRoom) => {
+		let childRoomsCount = 0n;
+		roomTree[currentRoom].forEach((childRoom) => {
+			childRoomsCount += dfsGetSubtreeSize(childRoom);
+		});
+		if (currentRoom > 0) {
+			totalSubtreeArrangements = (totalSubtreeArrangements * (childRoomsCount + 1n)) % modulus;
+		}
+		return childRoomsCount + 1n;
+	};
+	dfsGetSubtreeSize(0);
+	return Number((factorialArrangements * modularMultiplicativeInverse(totalSubtreeArrangements, modulus)) % modulus);
+};
+       
