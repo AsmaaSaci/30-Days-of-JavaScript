@@ -1,0 +1,33 @@
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var numDupDigitsAtMostN = function(n) {
+    const digits = String(n).split('').map(Number);
+    const len = digits.length;
+    
+    const dp = Array.from({ length: len }, () => Array(1 << 10).fill(-1));
+    
+    const countUnique = (pos, mask, isTight, hasLeadingZero) => {
+        if (pos === len) return hasLeadingZero ? 0 : 1;
+        if (!isTight && dp[pos][mask] !== -1) return dp[pos][mask];
+        
+        let limit = isTight ? digits[pos] : 9;
+        let result = 0;
+        
+        for (let digit = 0; digit <= limit; digit++) {
+            if (hasLeadingZero && digit === 0) {
+                result += countUnique(pos + 1, mask, isTight && (digit === limit), true);
+            } else if ((mask & (1 << digit)) === 0) {
+                result += countUnique(pos + 1, mask | (1 << digit), isTight && (digit === limit), false);
+            }
+        }
+        
+        if (!isTight) dp[pos][mask] = result;
+        return result;
+    };
+    
+    const totalUnique = countUnique(0, 0, true, true);
+    
+    return n - totalUnique;
+};
