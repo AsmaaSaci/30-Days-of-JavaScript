@@ -1,0 +1,16 @@
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var numOfWays = function(n) {
+  const MOD = 1000000007;
+  let biColor = 6;
+  let triColor = 6;
+
+  while (--n) {
+    triColor = (((triColor + biColor) % MOD) * 2) % MOD;
+    biColor = (biColor + triColor) % MOD;
+  }
+
+  return (biColor + triColor) % MOD;
+};
