@@ -1,0 +1,51 @@
+/**
+ * @param {number} n
+ * @param {number} x
+ * @param {number} y
+ * @return {number}
+ */
+var numberOfWays = function(n, x, y) {
+        let MOD = BigInt(1000000007);
+        // step 0: populate binomials
+        let binoms = [BigInt(1)];
+        for(let i=1; i < x; i++){
+            binoms.push(BigInt(1));
+            for(let j=binoms.length - 1; j>0; j--){
+                binoms[j] += binoms[j-1];
+            }
+        }
+        binoms.push(BigInt(1));
+        //console.log(binoms);
+        // step 1: populate stirling 2s
+        let stirling2 = [BigInt(0),BigInt(1)];
+        for(let i=2; i<n; i++){
+            stirling2.push(BigInt(1));
+            for(let j=stirling2.length-1; j>1; j--){
+                stirling2[j] *= BigInt(j);
+                stirling2[j] += stirling2[j-1];
+            }
+        }
+        stirling2.push(BigInt(1));
+        //console.log(stirling2);
+        // step 3: calculate i!s
+        facts = new Array(Math.min(n, x)+2).fill(BigInt(1));
+        facts[0] = BigInt(1);
+        for(let i=1; i<facts.length; i++){
+            facts[i] = facts[i-1]*BigInt(i);
+        }
+        //console.log(facts);
+        // step 4: calculate y^i
+        let pow = [BigInt(1)];
+        for(let i=1; i<=Math.min(n,x); i++){
+            pow.push(BigInt(y));
+            pow[pow.length-1] *= pow[pow.length-2];
+        }
+        // now calculate entire things 
+        //console.log(pow)
+        ans = BigInt(0);
+        for(let i=1; i<=Math.min(n, x); i++){
+            //console.log(ans, i)
+            ans += (binoms[i] * facts[i] * stirling2[i] * pow[i]) % MOD
+        }
+        return Number(ans % MOD);
+};
