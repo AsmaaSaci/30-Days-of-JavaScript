@@ -1,0 +1,82 @@
+/**
+ * @param {number} n
+ * @param {number} m
+ * @param {number[]} group
+ * @param {number[][]} beforeItems
+ * @return {number[]}
+ */
+var sortItems = function(n, m, group, beforeItems) {
+    
+    // we assign unique group IDs to items with no group
+    for (let i = 0; i < n; i++) {
+        if (group[i] === -1) {
+            group[i] = m++;
+        }
+    }
+
+    // we build graphs
+    const itemGraph = Array(n).fill(0).map(() => []);
+    const itemIndegree = Array(n).fill(0);
+    const groupGraph = Array(m).fill(0).map(() => []);
+    const groupIndegree = Array(m).fill(0);
+
+    for (let i = 0; i < n; i++) {
+        for (const prev of beforeItems[i]) {
+            itemGraph[prev].push(i);
+            itemIndegree[i]++;
+            if (group[i] !== group[prev]) {
+                groupGraph[group[prev]].push(group[i]);
+                groupIndegree[group[i]]++;
+            }
+        }
+    }
+
+    // Topological sort helper
+    const topoSort = (graph, indegree, nodes) => {
+        const res = [];
+        const queue = [];
+
+        for (const node of nodes) {
+            if (indegree[node] === 0) queue.push(node);
+        }
+
+        while (queue.length) {
+            const cur = queue.shift();
+            res.push(cur);
+            for (const nei of graph[cur]) {
+                indegree[nei]--;
+                if (indegree[nei] === 0) queue.push(nei);
+            }
+        }
+
+        return res.length === nodes.length ? res : [];
+    };
+
+    // we sort items
+    const allItems = Array.from({ length: n }, (_, i) => i);
+    const sortedItems = topoSort(itemGraph, itemIndegree, allItems);
+    if (sortedItems.length === 0) return [];
+
+    // we group items
+    const groupToItems = new Map();
+    for (const item of sortedItems) {
+        const g = group[item];
+        if (!groupToItems.has(g)) groupToItems.set(g, []);
+        groupToItems.get(g).push(item);
+    }
+
+    // we sort groups
+    const allGroups = Array.from({ length: m }, (_, i) => i);
+    const sortedGroups = topoSort(groupGraph, groupIndegree, allGroups);
+    if (sortedGroups.length === 0) return [];
+
+    // we build final result
+    const result = [];
+    for (const g of sortedGroups) {
+        if (groupToItems.has(g)) {
+            result.push(...groupToItems.get(g));
+        }
+    }
+
+    return result;
+};
