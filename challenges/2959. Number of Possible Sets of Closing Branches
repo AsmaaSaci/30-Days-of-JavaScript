@@ -1,0 +1,84 @@
+let oo = 1e9;
+let weights = new Uint32Array(100);
+let used = new Uint8Array(10);
+
+/**
+ * @type {number[][]}
+ */
+let dists = Array(10).fill();
+for (let i = 0; i < 10; ++i) dists[i] = new Uint32Array(100);
+
+/**
+ * @param {number} n
+ * @param {number} maxDistance
+ * @param {number[][]} roads
+ * @return {number}
+ */
+var numberOfSets = function (n, maxDistance, roads) {
+  let sqr = n * n;
+  weights.fill(oo, 0, sqr);
+  dists[0].fill(oo, 0, sqr);
+
+  function getW(u, v) {
+    if (used[u] && used[v]) return weights[u * n + v];
+    return oo;
+  }
+
+  for (let i = 0; i < n; ++i) {
+    weights[i * n + i] = 0;
+    dists[0][i * n + i] = 0;
+  }
+
+  for (let [u, v, w] of roads) {
+    let ind = u * n + v;
+    weights[ind] = Math.min(weights[ind], w);
+    ind = v * n + u;
+    weights[ind] = Math.min(weights[ind], w);
+  }
+
+  let res = 0;
+
+  function bt(c) {
+    if (c == n) {
+      for (let u = 0; u < n; ++u) {
+        for (let v = u + 1; v < n; ++v) {
+          if (used[u] && used[v] && dists[n - 1][u * n + v] > maxDistance)
+            return;
+        }
+      }
+      ++res;
+      return;
+    }
+    let curDist = dists[c];
+
+    if (c) {
+      for (let i = 0; i < sqr; ++i) curDist[i] = dists[c - 1][i];
+    }
+
+    bt(c + 1);
+
+    used[c] = 1;
+    for (let v = 0; v < n; ++v) {
+      curDist[c * n + v] = Math.min(curDist[c * n + v], getW(c, v));
+      curDist[v * n + c] = Math.min(curDist[v * n + c], getW(c, v));
+    }
+
+    for (let m = 0; m < n; ++m) {
+      for (let u = 0; u < n; ++u) {
+        for (let v = 0; v < n; ++v) {
+          let ucv = curDist[u * n + m] + curDist[v * n + m];
+          if (ucv < curDist[u * n + v]) {
+            curDist[u * n + v] = ucv;
+            curDist[v * n + u] = ucv;
+          }
+        }
+      }
+    }
+
+    bt(c + 1);
+    used[c] = 0;
+  }
+
+  bt(0);
+  return res;
+};
