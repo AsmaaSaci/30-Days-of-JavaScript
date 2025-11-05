@@ -1,0 +1,53 @@
+/**
+ * @param {number[][]} edges
+ * @param {number} maxMoves
+ * @param {number} n
+ * @return {number}
+ */
+var reachableNodes = function(edges, maxMoves, n) {
+    const graph = Array(n).fill().map(() => new Map());
+    for (const [u, v, cnt] of edges) {
+        graph[u].set(v, cnt);
+        graph[v].set(u, cnt);
+    }
+    
+    const dist = Array(n).fill(Infinity);
+    dist[0] = 0;
+    const pq = [[0, 0]]; // [distance, node]
+    const seen = new Map();
+    
+    while (pq.length > 0) {
+        const [d, node] = pq.shift();
+        if (d > dist[node]) continue;
+        
+        for (const [nei, cnt] of graph[node]) {
+            // Calculate remaining moves after reaching neighbor
+            const moves = maxMoves - d;
+            const reachableNodes = Math.min(cnt, moves);
+            seen.set(`${node},${nei}`, reachableNodes);
+            
+            // Try to reach the neighbor node
+            const d2 = d + cnt + 1;
+            if (d2 <= maxMoves && d2 < dist[nei]) {
+                dist[nei] = d2;
+                pq.push([d2, nei]);
+            }
+        }
+        pq.sort((a, b) => a[0] - b[0]);
+    }
+    
+    // Count reachable original nodes
+    let result = 0;
+    for (let i = 0; i < n; i++) {
+        if (dist[i] <= maxMoves) result++;
+    }
+    
+    // Count reachable subdivision nodes
+    for (const [u, v, cnt] of edges) {
+        const a = seen.get(`${u},${v}`) || 0;
+        const b = seen.get(`${v},${u}`) || 0;
+        result += Math.min(cnt, a + b);
+    }
+    
+    return result;
+};
