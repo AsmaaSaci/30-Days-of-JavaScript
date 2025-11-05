@@ -1,0 +1,34 @@
+var maximizeXorAndXor = function(nums) {
+    const n = nums.length
+    let ans = 0
+    for(let mask=0; mask < (1<<n); mask++){
+        let andB = 0
+        let anyB = false
+        let rem = []
+        for(let i=0;i<n;i++){
+            if(mask & (1<<i)){
+                if(!anyB){ andB = nums[i]; anyB = true }
+                else andB &= nums[i]
+            } else rem.push(nums[i])
+        }
+        if(!anyB) andB = 0
+        let S = 0
+        for(let v of rem) S ^= v
+        let invS = ~S
+        let basis = new Array(31).fill(0)
+        for(let v of rem){
+            let x = v & invS
+            for(let b=30;b>=0 && x>0;b--){
+                if(((x>>>b)&1)===0) continue
+                if(basis[b]===0){ basis[b]=x; break }
+                x ^= basis[b]
+            }
+        }
+        let best = 0
+        for(let b=30;b>=0;b--){
+            if(basis[b] && (best ^ basis[b]) > best) best ^= basis[b]
+        }
+        ans = Math.max(ans, andB + S + (best<<1))
+    }
+    return ans
+}
