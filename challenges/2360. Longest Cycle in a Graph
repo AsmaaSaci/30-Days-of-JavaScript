@@ -1,0 +1,58 @@
+/**
+ * @param {number[]} edges
+ * @return {number}
+ */
+var longestCycle = function (edges) {
+  const n = edges.length;
+  // Track in-degree for each node
+  const indegree = new Array(n).fill(0);
+
+  // Calculate in-degrees
+  for (const edge of edges) {
+    if (edge !== -1) {
+      indegree[edge]++;
+    }
+  }
+
+  // First pass: Remove nodes with no incoming edges
+  const queue = [];
+  for (let i = 0; i < n; i++) {
+    if (indegree[i] === 0) {
+      queue.push(i);
+    }
+  }
+
+  // Process queue to remove nodes not in cycles
+  while (queue.length) {
+    const node = queue.pop();
+    const next = edges[node];
+    if (next !== -1) {
+      indegree[next]--;
+      if (indegree[next] === 0) {
+        queue.push(next);
+      }
+    }
+  }
+
+  // Second pass: Find longest cycle in remaining nodes
+  let maxCycle = -1;
+  const visited = new Array(n).fill(false);
+
+  for (let i = 0; i < n; i++) {
+    if (indegree[i] > 0 && !visited[i]) {
+      let curr = i;
+      let length = 0;
+
+      // Follow the cycle and count length
+      while (!visited[curr]) {
+        visited[curr] = true;
+        length++;
+        curr = edges[curr];
+      }
+
+      maxCycle = Math.max(maxCycle, length);
+    }
+  }
+
+  return maxCycle;
+};
