@@ -1,0 +1,41 @@
+class DinnerPlates {
+    constructor(CAP) {
+        this.CAP = CAP;
+        this.stackArr = [];
+        this.minAvailableStackIndicesPq = new MinPriorityQueue();
+        this.r2Delete = -1; // right most index to delete
+    }
+
+    push(val) {
+        let i;
+        if (!this.minAvailableStackIndicesPq.isEmpty()) {
+            i = this.minAvailableStackIndicesPq.front();
+        } else {
+            this.stackArr.push([]);
+            i = this.stackArr.length - 1;
+            this.minAvailableStackIndicesPq.enqueue(i);
+        }
+        this.stackArr[i].push(val);
+        this.r2Delete = i;
+        if (this.stackArr[i].length === this.CAP) {
+            this.minAvailableStackIndicesPq.dequeue();
+        }
+    }
+
+    pop() {
+        while (this.stackArr[this.r2Delete]?.length === 0) this.r2Delete--;
+        if (this.r2Delete < 0) return -1;
+        const val = this.stackArr[this.r2Delete].pop();
+        this.minAvailableStackIndicesPq.enqueue(this.r2Delete);
+        return val;
+    }
+
+    popAtStack(i) {
+        if (i < 0) return -1;
+        if (i >= this.stackArr.length) return -1;
+        if (this.stackArr[i].length === 0) return -1;
+        const val = this.stackArr[i].pop();
+        this.minAvailableStackIndicesPq.enqueue(i);
+        return val;
+    }
+}
