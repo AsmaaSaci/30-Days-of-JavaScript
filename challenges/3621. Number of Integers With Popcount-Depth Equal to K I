@@ -1,0 +1,90 @@
+// Pre-computation of popcount-depths for small numbers, done once at script load.
+const dp1 = {1: 0};
+
+// Helper function to count set bits (popcount) in a number's binary representation.
+function count_set_bits(n) {
+    const binary = n.toString(2);
+    let count = 0;
+    for (let i = 0; i < binary.length; i++) {
+        if (binary[i] === '1') {
+            count++;
+        }
+    }
+    return count;
+}
+
+// Populate the dp1 table for numbers from 2 to 64.
+for (let i = 2; i < 65; i++) {
+    const set_bits = count_set_bits(i);
+    dp1[i] = 1 + dp1[set_bits];
+}
+
+/**
+ * @param {number} n
+ * @param {number} k
+ * @return {number}
+ */
+var popcountDepth = function(n, k) {
+    console.log(dp1); // This is equivalent to the print(dp1) in the original Python code.
+
+    if (k === 0) {
+        return 1; // The only integer with popcount-depth 0 is 1.
+    }
+
+    const subset = new Set();
+    // Collect all popcount values that have a depth of k-1.
+    for (const key in dp1) {
+        if (dp1[key] === k - 1) {
+            subset.add(parseInt(key, 10));
+        }
+    }
+
+    const binary_num = BigInt(n).toString(2);
+    // Memoization table for digit DP, using a fixed size as in the original code.
+    const dp = Array(65).fill(0).map(() => 
+        Array(65).fill(0).map(() => Array(2).fill(-1n))
+    );
+
+    // Digit DP function to count numbers up to n with a popcount in the target subset.
+    const fun = (index, ones, tight) => {
+        // Base case: we have constructed a full number.
+        if (index === binary_num.length) {
+            // Check if its popcount is in our target set.
+            return subset.has(ones) ? 1n : 0n;
+        }
+
+        // Return memoized result if it exists.
+        if (dp[index][ones][tight] !== -1n) {
+            return dp[index][ones][tight];
+        }
+
+        let ans = 0n;
+        // Determine the upper bound for the current bit based on the tight constraint.
+        const limit = tight === 1 ? parseInt(binary_num[index]) : 1;
+
+        // Iterate through possible bits (0 or 1).
+        for (let d = 0; d <= limit; d++) {
+            // Update the tight constraint for the next recursive call.
+            const new_tight = (tight === 1 && d === limit) ? 1 : 0;
+            ans += fun(index + 1, ones + d, new_tight);
+        }
+
+        dp[index][ones][tight] = ans; // Memoize the result.
+        return ans;
+    };
+    
+    // Start the digit DP from the most significant bit.
+    let cnt = fun(0, 0, 1);
+
+    // Special case correction for k=1.
+    // The logic counts numbers x where popcount(x) has depth k-1.
+    // For k=1, this means popcount(x) has depth 0, which implies popcount(x)=1.
+    // This count includes x=1, but depth(1) is 0, not 1, so it must be excluded.
+    if (k === 1 && subset.has(1)) {
+        cnt -= 1n;
+    }
+
+    // The result might be larger than Number.MAX_SAFE_INTEGER, so we use BigInt throughout
+    // and convert to Number only at the end, as per the function's signature.
+    return Number(cnt);
+};
