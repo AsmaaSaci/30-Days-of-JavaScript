@@ -1,0 +1,24 @@
+var findMaximumElegance = function(items, k) {
+    items.sort((a,b)=>b[0]-a[0]);
+    let used = new Set();
+    let dup = [];
+    let sum = 0n;
+    for (let i=0;i<k;i++){
+        sum += BigInt(items[i][0]);
+        if (used.has(items[i][1])) dup.push(items[i][0]);
+        used.add(items[i][1]);
+    }
+    dup.sort((a,b)=>a-b);
+    let ans = sum + BigInt(used.size*used.size);
+    let j = k;
+    for (let i=0;i<dup.length;i++){
+        while(j<items.length && used.has(items[j][1])) j++;
+        if (j==items.length) break;
+        sum -= BigInt(dup[i]);
+        sum += BigInt(items[j][0]);
+        used.add(items[j][1]);
+        ans = ans > sum + BigInt(used.size*used.size) ? ans : sum + BigInt(used.size*used.size);
+        j++;
+    }
+    return Number(ans);
+};
