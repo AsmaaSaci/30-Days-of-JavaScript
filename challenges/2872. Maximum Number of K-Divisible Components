@@ -1,0 +1,38 @@
+class Solution {
+    maxKDivisibleComponents(n, edges, vals, k) {
+        if (n < 2) return 1;
+        
+        const graph = Array.from({ length: n }, () => []);
+        const degree = Array(n).fill(0);
+        
+        for (const [a, b] of edges) {
+            graph[a].push(b);
+            graph[b].push(a);
+            degree[a]++;
+            degree[b]++;
+        }
+        
+        const nodeVals = [...vals];
+        const leafQ = [];
+        for (let i = 0; i < n; i++) if (degree[i] === 1) leafQ.push(i);
+        
+        let compCnt = 0;
+        while (leafQ.length > 0) {
+            const curr = leafQ.shift();
+            degree[curr]--;
+            let carry = 0;
+            
+            if (nodeVals[curr] % k === 0) compCnt++;
+            else carry = nodeVals[curr];
+            
+            for (const nbr of graph[curr]) {
+                if (degree[nbr] === 0) continue;
+                degree[nbr]--;
+                nodeVals[nbr] += carry;
+                if (degree[nbr] === 1) leafQ.push(nbr);
+            }
+        }
+        
+        return compCnt;
+    }
+}
