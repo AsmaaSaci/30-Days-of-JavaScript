@@ -1,0 +1,32 @@
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var minDays = function(n) {
+    let layer = 0, minSF = n
+    const queue = [n, null]
+    function enqueue(val) {
+        if (val > minSF * 12)
+            return
+
+        queue.push(val)
+        minSF = Math.min(minSF, val)
+    }
+
+    
+    for (let sf = 0; sf < queue.length; sf++) {
+        const head = queue[sf]
+        if (head === null) {
+            layer++
+            if (sf < queue.length - 1) {
+                queue.push(head)
+            }
+        } else {
+            if (head === 0) return layer
+            
+            if (head % 3 === 0)  enqueue(head / 3)
+            if (head % 2 === 0)  enqueue(head / 2)
+            enqueue(head - 1)
+        }
+    }
+};
