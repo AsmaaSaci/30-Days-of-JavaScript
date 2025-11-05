@@ -1,0 +1,92 @@
+/**
+ * @param {number} n
+ * @param {number[][]} edges
+ * @return {boolean}
+ */
+var isPossible = function(n, edges) {
+    function Node(i) {
+        this.i = i
+        this.neighs = new Set()
+    }
+
+    // build nodes
+    const nodes = new Array(n)
+    for (const i of nodes.keys())
+        nodes[i] = new Node(i)
+    
+    // build edges
+    for (const edge of edges) {
+        const f = edge[0] - 1, t = edge[1] - 1
+        const F = nodes[f], T = nodes[t]
+        F.neighs.add(T)
+        T.neighs.add(F)
+    }
+
+
+    // rmg: count of remaining edges (initially rmg = 2)
+    // extra: when an edge is added to an odd node to fix it, 
+    // another odd node needs this edge, too. when extra === 1, 
+    // we can use it for another odd node, without consuming another edge
+    let rmg = 2, extra = 0
+    // the odd nodes that we fix
+    const processed = []
+    outer:
+    for (const [i, node] of nodes.entries()) {
+        if (node.neighs.size & 1) { // an odd node is found!
+            if (node.neighs.size === n - 1) // unfixable
+                return false
+            
+            if (extra === 1) {
+                // consume the other end of the edge
+                processed.push(node)
+                extra = 0
+                continue
+            }
+
+            if (rmg === 0) {
+                // 2 edges exhausted
+                return false
+            }
+            
+            // consume an edge
+            processed.push(node)
+            rmg--
+            extra = 1
+        }
+    }
+
+
+    const size = processed.length
+    const [A, B, C, D] = processed
+    const fullCount = n - 1,
+        fullCountMinus2 = fullCount - 2
+    if (size === 2) {
+        // if not, we don't return false, because we can simply connect A and B!
+        if (A.neighs.has(B)) {
+            let isOK = false
+            for (const other of nodes) {
+                if (other === A || other === B) continue
+                const { neighs } = other
+                // find another node which can accomodate both A and B
+                if (neighs.size <= fullCountMinus2 && !neighs.has(A) && !neighs.has(B)) {
+                    isOK = true
+                    break
+                }
+            }
+
+            if (!isOK)  return false
+        }
+    } else if (size === 4) {
+        // if any pair combination fails, we return false
+        if (
+            (A.neighs.has(B) || C.neighs.has(D)) &&
+            (A.neighs.has(C) || B.neighs.has(D)) && 
+            (A.neighs.has(D) || B.neighs.has(C))
+        ) {
+            return false
+        }
+    }
+
+
+    return true
+};
