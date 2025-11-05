@@ -1,0 +1,51 @@
+/**
+ * @param {number} n
+ * @param {number} m
+ * @return {number}
+ */
+var tilingRectangle = function(n, m) {
+    if (n === m) return 1;
+    if (n === 1) return m;
+    if (m === 1) return n;
+
+    let i=n, j=m, ans = 1;
+    while(i !== j) {
+        if (i > j) i -= j; else j -= i;
+        ans ++;
+    }
+    const area = n * m;
+    const heights = new Array(m).fill(0);
+    
+    const dfs = (x, index, aa) => {
+        if (index >= ans) return;
+
+        let size = 1;
+        const height = heights[x], max = n - height;
+        while(size < max && x + size < m && heights[x+size] === height) size ++;
+
+        // 枚举正方形尺寸
+        while(size > 0) {
+            // 标记
+            for (let i=x; i<x+size; i++) {
+                heights[i] = height + size;
+            }
+            // 找到最后一个正方形
+            if (aa + size * size === area) {
+                console.log(heights);
+                ans = index;
+                return;
+            }
+            let nextx = 0;
+            // 寻找下一个
+            for (let i=1; i<m; i++) {
+                if (heights[i] < heights[nextx]) {
+                    nextx = i;
+                }
+            }
+            dfs(nextx, index + 1, aa + size * size);
+            heights[x+(--size)] = height;
+        }
+    }
+    dfs(0, 1, 0);
+    return ans;
+};
