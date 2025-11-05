@@ -1,0 +1,57 @@
+/**
+ * @param {number[]} edges
+ * @return {number[]}
+ */
+var countVisitedNodes = function(edges) {
+    const len = edges.length
+    // store outcomes for each index
+    const table = new Array(len)
+
+
+    return edges.map((next, i) => {
+        const existing = table[i]
+        if (existing !== undefined)
+            return existing
+        
+
+        const visited = new Set()
+        let found, // the case of finding an already-known node
+            repeated // the case of closing a cycle
+        for (let p = i; ; p = edges[p]) {
+            if (table[p] !== undefined) {
+                found = p
+                break
+            }
+            if (visited.has(p)) {
+                repeated = p
+                break
+            }
+                
+            visited.add(p)
+        }
+
+        const queue = [...visited], size = queue.length
+        if (found !== undefined) {
+            const foundOutcome = table[found]
+            for (let offset = 1; offset <= size; offset++) {
+                const idx = queue.at(-offset)
+                table[idx] = foundOutcome + offset
+            }
+        } else {
+            const indexOfRepeated = queue.indexOf(repeated)
+            const cycleSize = size - indexOfRepeated
+            for (let j = indexOfRepeated; j < size; j++) {
+                const idx = queue[j]
+                table[idx] = cycleSize
+            }
+            for (let j = indexOfRepeated - 1, offset = 1; 
+                j > -1; j--, offset++) {
+                const idx = queue[j]
+                table[idx] = offset + cycleSize
+            }
+        }
+        
+
+        return table[i]
+    })
+};
