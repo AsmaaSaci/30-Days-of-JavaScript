@@ -1,0 +1,37 @@
+/**
+ * @param {Generator} generator
+ * @return {[Function, Promise]}
+ */
+var cancellable = function(generator) {
+    let cancel;
+    let cancelled = false;
+
+    const promise = new Promise(async (resolve, reject) => {
+        cancel = () => {
+            cancelled = true;
+        };
+
+        try {
+            let next = generator.next();
+
+            while (!next.done) {
+                try {
+                    const val = await next.value;
+                    if (cancelled) {
+                        next = generator.throw("Cancelled");
+                    } else {
+                        next = generator.next(val);
+                    }
+                } catch (err) {
+                    next = generator.throw(err);
+                }
+            }
+
+            resolve(next.value);
+        } catch (err) {
+            reject(err);
+        }
+    });
+
+    return [cancel, promise];
+};
