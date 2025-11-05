@@ -1,0 +1,57 @@
+var placedCoins = function(edges, cost) {
+    const n = cost.length;
+    const edge = Array.from({ length: n }, () => []);
+
+    for (const [u, v] of edges) {
+        edge[u].push(v);
+        edge[v].push(u);
+    }
+
+    const pos = Array.from({ length: n }, () => new Set());
+    const neg = Array.from({ length: n }, () => new Set());
+    const coins = new Array(n).fill(0);
+
+    const dfs = (x, p) => {
+        if (cost[x] > 0) {
+            pos[x].add(cost[x]);
+        } else {
+            neg[x].add(cost[x]);
+        }
+
+        for (const y of edge[x]) {
+            if (y === p) continue;
+            dfs(y, x);
+
+            pos[x] = new Set([...pos[x], ...pos[y]]);
+            neg[x] = new Set([...neg[x], ...neg[y]]);
+
+            pos[x] = Array.from(pos[x]).sort((a, b) => a - b).slice(0, 3);
+            neg[x] = Array.from(neg[x]).sort((a, b) => b - a).slice(0, 3);
+        }
+
+        const ps = pos[x].size, ns = neg[x].size;
+
+        if (ps + ns < 3) {
+            coins[x] = 1;
+        } else {
+            let mx = Number.MIN_SAFE_INTEGER;
+
+            if (ps >= 3) {
+                const [lst, slst, tlst] = Array.from(pos[x]).slice(-3);
+                mx = Math.max(mx, lst * slst * tlst);
+            }
+            if (ns >= 2 && ps >= 1) {
+                const [lst, slst] = Array.from(neg[x]).slice(0, 2);
+                const tlst = Math.max(...Array.from(pos[x]));
+                mx = Math.max(mx, lst * slst * tlst);
+            }
+            if (mx > 0) {
+                coins[x] = mx;
+            }
+        }
+    };
+
+    dfs(0, -1);
+    return coins;
+};
+
