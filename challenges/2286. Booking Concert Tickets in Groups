@@ -1,0 +1,95 @@
+var BookMyShow = function(n, m) {
+    this.m = m;
+    this.n = n;
+    this.tfree = new Array(n*4).fill(0);
+    this.lfree = new Array(n*4).fill(0);
+    this.build(1,0,n-1);
+};
+
+BookMyShow.prototype.build = function(i,l,r){
+    if(l==r){
+        this.tfree[i]=this.m;
+        this.lfree[i]=this.m;
+        return;
+    }
+    let mid=(l+r)>>1;
+    this.build(i<<1,l,mid);
+    this.build(i<<1|1,mid+1,r);
+    this.tfree[i]=this.tfree[i<<1]+this.tfree[i<<1|1];
+    this.lfree[i]=Math.max(this.lfree[i<<1],this.lfree[i<<1|1]);
+};
+
+BookMyShow.prototype.update = function(i,l,r,pos,v){
+    if(l==r){
+        this.tfree[i]=v;
+        this.lfree[i]=v;
+        return;
+    }
+    let mid=(l+r)>>1;
+    if(pos<=mid) this.update(i<<1,l,mid,pos,v);
+    else this.update(i<<1|1,mid+1,r,pos,v);
+    this.tfree[i]=this.tfree[i<<1]+this.tfree[i<<1|1];
+    this.lfree[i]=Math.max(this.lfree[i<<1],this.lfree[i<<1|1]);
+};
+
+BookMyShow.prototype.queryGather = function(i,l,r,k,mx){
+    if(l>mx||this.lfree[i]<k) return -1;
+    if(l==r) return l;
+    let mid=(l+r)>>1;
+    let left=this.queryGather(i<<1,l,mid,k,mx);
+    if(left!=-1) return left;
+    return this.queryGather(i<<1|1,mid+1,r,k,mx);
+};
+
+BookMyShow.prototype.querySum = function(i,l,r,mx){
+    if(r<=mx) return this.tfree[i];
+    let mid=(l+r)>>1;
+    let ans=0;
+    ans+=this.querySum(i<<1,l,mid,Math.min(mx,mid));
+    if(mx>mid) ans+=this.querySum(i<<1|1,mid+1,r,mx);
+    return ans;
+};
+
+BookMyShow.prototype.gather = function(k, maxRow) {
+    let r=this.queryGather(1,0,this.n-1,k,maxRow);
+    if(r==-1) return [];
+    let i=1,l=0,r2=this.n-1;
+    while(l<r||r2>r){
+        let mid=(l+r2)>>1;
+        if(r<=mid){
+            i=i<<1;
+            r2=mid;
+        } else {
+            i=i<<1|1;
+            l=mid+1;
+        }
+    }
+    let pos=this.m-this.tfree[i];
+    this.update(1,0,this.n-1,r,this.tfree[i]-k);
+    return [r,pos];
+};
+
+BookMyShow.prototype.scatter = function(k, maxRow) {
+    let sum=this.querySum(1,0,this.n-1,maxRow);
+    if(sum<k) return false;
+    let need=k;
+    for(let row=0;row<=maxRow&&need>0;row++){
+        let i=1,l=0,r=this.n-1;
+        while(l<row||r>row){
+            let mid=(l+r)>>1;
+            if(row<=mid){
+                i=i<<1;
+                r=mid;
+            } else {
+                i=i<<1|1;
+                l=mid+1;
+            }
+        }
+        let take=Math.min(need,this.tfree[i]);
+        if(take>0){
+            this.update(1,0,this.n-1,row,this.tfree[i]-take);
+            need-=take;
+        }
+    }
+    return true;
+};
