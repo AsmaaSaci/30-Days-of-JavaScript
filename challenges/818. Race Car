@@ -1,0 +1,63 @@
+/**
+ * @param {number} target
+ * @return {number}
+ */
+var racecar = function(target) {
+    const dp = new Array(target + 1).fill(Infinity);
+    dp[0] = 0;
+
+    for (let t = 1; t <= target; t++) {
+        for (let k = 1; ; k++) {
+            const forward = (1 << k) - 1; // position after k 'A's
+            if (forward > 2 * target) break;
+
+            if (forward === t) {
+                dp[t] = k;
+                break;
+            }
+
+            // overshoot then reverse
+            if (forward > t) {
+                dp[t] = Math.min(dp[t], k + 1 + dp[forward - t]);
+            }
+
+            // undershoot, reverse, try j A's on the other side then reverse again
+            for (let j = 0; j < k; j++) {
+                const backward = (1 << j) - 1;
+                const pos = forward - backward;
+                if (pos >= t) continue;
+                dp[t] = Math.min(dp[t], k + 1 + j + 1 + dp[t - pos]);
+            }
+        }
+    }
+
+    if (Number.isFinite(dp[target])) return dp[target];
+
+    // Fallback: memoized DFS (guarantees a finite integer)
+    const memo = new Map();
+    function dfs(x) {
+        if (memo.has(x)) return memo.get(x);
+        let n = Math.ceil(Math.log2(x + 1)); // smallest n with 2^n -1 >= x
+        if ((1 << n) - 1 === x) {
+            memo.set(x, n);
+            return n;
+        }
+
+        // option 1: overshoot with n A's, then reverse and solve (overshoot - x)
+        let res = n + 1 + dfs((1 << n) - 1 - x);
+
+        // option 2: do (n-1) A's, reverse, then try j A's on the other side
+        for (let m = 0; m < n - 1; m++) {
+            const forward = (1 << (n - 1)) - 1;
+            const backward = (1 << m) - 1;
+            const pos = forward - backward;
+            // steps: (n-1) A's + R + m A's + R + dfs(x - pos)
+            res = Math.min(res, (n - 1) + 1 + m + 1 + dfs(x - pos));
+        }
+
+        memo.set(x, res);
+        return res;
+    }
+
+    return dfs(target);
+};
