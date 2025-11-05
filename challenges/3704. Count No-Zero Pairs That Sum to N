@@ -1,0 +1,21 @@
+const countNoZeroPairs = (n) => {
+  const memo = new Map();
+
+  const helper = (n) => {
+    if (n < 10) {
+      return n ? n - 1 : 1;
+    }
+    if (memo.has(n)) {
+      return memo.get(n);
+    }
+    const digit = n % 10, tens = Math.floor(n / 10);
+    const result = (
+      (helper(tens - 1) + (String(tens - 1).includes("0") ? 0 : 2)) * (9 - digit) +
+      (helper(tens) + (String(tens).includes("0") ? 0 : 2)) * (digit ? digit - 1 : 0)
+    );
+    memo.set(n, result);
+    return result;
+  }
+
+  return helper(n);
+};
