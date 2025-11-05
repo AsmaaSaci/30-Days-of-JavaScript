@@ -1,0 +1,28 @@
+/**
+ * @param {number} left
+ * @param {number} right
+ * @return {string}
+ */
+var abbreviateProduct = function(left, right) {
+    let product = 1n
+    let count = 0
+    for(let i = left; i <= right; i++){
+        product *= BigInt(i)
+    }
+     while(product % 10n === 0n){
+        product /= 10n
+        count++
+    }
+   
+    product = product.toString()
+    if(product.length > 10){
+        const first = product.slice(0,5)
+        const last = product.slice(-5)
+
+        return first + '...' + last + 'e' + count
+
+    }
+    return product + 'e' + count
+    
+    
+};
