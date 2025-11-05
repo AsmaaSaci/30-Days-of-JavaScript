@@ -1,0 +1,14 @@
+	// WRITTEN VERBOSE BELOW WITH EXPLANATION
+ const rearrangeSticks = (N, K) => {
+    const dp = Array.from({ length: N + 1 }, () => new Array(K + 1));
+    const dfs = (n, k) => {
+        if (k > n || k === 0) return 0;
+        if (n === 1) return 1;
+        if (dp[n][k] !== undefined) return dp[n][k]
+        const numberOfSmallerSticks = n - 1;
+        const pickTallestStick = dfs(numberOfSmallerSticks, k - 1);
+        const pickOneOfNotTallestStick = dfs(numberOfSmallerSticks, k);
+        return dp[n][k] = (pickTallestStick + pickOneOfNotTallestStick * numberOfSmallerSticks) % 1000000007;
+    }
+    return dfs(N, K);
+};
