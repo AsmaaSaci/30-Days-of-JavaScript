@@ -1,0 +1,105 @@
+var findAnswer = function(n, edges) {
+  const graph = Array.from({ length: n }, () => []);
+  const distTo = Array(n).fill(Infinity);
+  const distFrom = Array(n).fill(Infinity);
+  const answer = Array(edges.length).fill(false);
+
+  for (let i = 0; i < edges.length; i++) {
+    const [a, b, w] = edges[i];
+    graph[a].push([b, w, i]);
+    graph[b].push([a, w, i]);
+  }
+
+  const dijkstra = (start, distArray) => {
+    const minHeap = new PQ((a, b) => a[0] < b[0]);
+    distArray[start] = 0;
+    minHeap.push([0, start]);
+
+    while (!minHeap.isEmpty()) {
+      const [dist, u] = minHeap.pop();
+
+      if (dist > distArray[u]) continue;
+
+      for (let [v, weight] of graph[u]) {
+        if (distArray[u] + weight < distArray[v]) {
+          distArray[v] = distArray[u] + weight;
+          minHeap.push([distArray[v], v]);
+        }
+      }
+    }
+  };
+
+  dijkstra(0, distTo);
+  dijkstra(n - 1, distFrom);
+
+  if (distTo[n - 1] === Infinity) {
+    return Array(edges.length).fill(false);
+  }
+
+  for (let i = 0; i < edges.length; i++) {
+    const [a, b, w] = edges[i];
+    if (distTo[a] + w + distFrom[b] === distTo[n - 1] || distTo[b] + w + distFrom[a] === distTo[n - 1]) {
+      answer[i] = true;
+    }
+  }
+
+  return answer;
+};
+
+class PQ {
+  constructor(comparator = (a, b) => a < b) {
+    this._heap = [];
+    this._comparator = comparator;
+  }
+
+  push(value) {
+    this._heap.push(value);
+    this._siftUp();
+  }
+
+  pop() {
+    const poppedValue = this._heap[0];
+    const bottom = this._heap.pop();
+    if (this._heap.length > 0) {
+      this._heap[0] = bottom;
+      this._siftDown();
+    }
+    return poppedValue;
+  }
+
+  isEmpty() {
+    return this._heap.length === 0;
+  }
+
+  _siftUp() {
+    let nodeIdx = this._heap.length - 1;
+    while (nodeIdx > 0 && this._compare(nodeIdx, Math.floor((nodeIdx - 1) / 2))) {
+      this._swap(nodeIdx, Math.floor((nodeIdx - 1) / 2));
+      nodeIdx = Math.floor((nodeIdx - 1) / 2);
+    }
+  }
+
+  _siftDown() {
+    let nodeIdx = 0;
+    while (
+      (nodeIdx * 2 + 1 < this._heap.length && this._compare(nodeIdx * 2 + 1, nodeIdx)) ||
+      (nodeIdx * 2 + 2 < this._heap.length && this._compare(nodeIdx * 2 + 2, nodeIdx))
+    ) {
+      const smallerChildIdx =
+        nodeIdx * 2 + 2 < this._heap.length && this._compare(nodeIdx * 2 + 2, nodeIdx * 2 + 1)
+          ? nodeIdx * 2 + 2
+          : nodeIdx * 2 + 1;
+
+      this._swap(nodeIdx, smallerChildIdx);
+      nodeIdx = smallerChildIdx;
+    }
+  }
+
+  _compare(i, j) {
+    return this._comparator(this._heap[i], this._heap[j]);
+  }
+
+  _swap(i, j) {
+    [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
+  }
+}
