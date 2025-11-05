@@ -1,0 +1,82 @@
+const MOD = 10 ** 9 + 7;
+
+var Fancy = function () {
+    this.elements = [];
+    this.current_m = 1;
+    this.current_a = 0;
+};
+
+/** 
+ * @param {number} val
+ * @return {void}
+ */
+Fancy.prototype.append = function (val) {
+    this.elements.push({
+        val: val,
+        im: this.current_m,
+        ia: this.current_a
+    });
+};
+
+/** 
+ * @param {number} inc
+ * @return {void}
+ */
+Fancy.prototype.addAll = function (inc) {
+    this.current_a = (this.current_a + inc) % MOD;
+};
+
+/** 
+ * @param {number} m
+ * @return {void}
+ */
+Fancy.prototype.multAll = function (m) {
+    this.current_m = (this.current_m * m) % MOD;
+    this.current_a = (this.current_a * m) % MOD;
+};
+
+/** 
+ * @param {number} idx
+ * @return {number}
+ */
+Fancy.prototype.getIndex = function (idx) {
+    if (idx >= this.elements.length) return -1;
+    const element = this.elements[idx];
+    const val = BigInt(element.val);
+    const im = BigInt(element.im);
+    const ia = BigInt(element.ia);
+    const current_m = BigInt(this.current_m);
+    const current_a = BigInt(this.current_a);
+    const MOD_BIG = BigInt(MOD);
+
+    const inv_im = modInverse(im);
+
+    let term1 = (val * current_m) % MOD_BIG;
+    term1 = (term1 * inv_im) % MOD_BIG;
+
+    let term3_part = (ia * current_m) % MOD_BIG;
+    term3_part = (term3_part * inv_im) % MOD_BIG;
+
+    let result = (term1 + current_a - term3_part) % MOD_BIG;
+    if (result < 0n) {
+        result += MOD_BIG;
+    }
+    return Number(result);
+};
+
+function modInverse(a) {
+    return powMod(a, BigInt(MOD - 2), BigInt(MOD));
+}
+
+function powMod(a, b, mod) {
+    let result = 1n;
+    a = a % mod;
+    while (b > 0n) {
+        if (b % 2n === 1n) {
+            result = (result * a) % mod;
+        }
+        a = (a * a) % mod;
+        b = b >> 1n;
+    }
+    return result;
+}
