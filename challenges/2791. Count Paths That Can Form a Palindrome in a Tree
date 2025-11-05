@@ -1,0 +1,28 @@
+/**
+ * @param {number[]} parent
+ * @param {string} s
+ * @return {number}
+ */
+var countPalindromePaths = function(parent, s) {
+    const n = parent.length;
+    const dp = Array(n).fill(0);
+    let res = 0;
+    const count = new Map();
+
+    function bit(parent, s, i) {
+        if (i > 0 && dp[i] === 0)
+            dp[i] = bit(parent, s, parent[i]) ^ (1 << (s.charCodeAt(i) - 97));
+        return dp[i];
+    }
+
+    for (let i = 0; i < n; i++) {
+        const mask = bit(parent, s, i);
+        const v = count.get(mask) || 0;
+        for (let j = 0; j < 26; j++)
+            res += count.get(mask ^ (1 << j)) || 0;
+        res += v;
+        count.set(mask, v + 1);
+    }
+    
+    return res;
+};
