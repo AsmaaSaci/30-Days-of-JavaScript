@@ -1,57 +1,84 @@
-var placedCoins = function(edges, cost) {
-    const n = cost.length;
-    const edge = Array.from({ length: n }, () => []);
+/**
+ * @param {number[][]} edges
+ * @param {number[]} cost
+ * @return {number[]}
+ */
+var placedCoins = function (edges, cost) {
+    const adjList = [];
 
-    for (const [u, v] of edges) {
-        edge[u].push(v);
-        edge[v].push(u);
+    // create adjacency list
+    for (let [n, nn] of edges) {
+        while (adjList.length <= n || adjList.length <= nn) {
+            adjList.push([]);
+        }
+        adjList[n].push(nn);
+        adjList[nn].push(n);
     }
 
-    const pos = Array.from({ length: n }, () => new Set());
-    const neg = Array.from({ length: n }, () => new Set());
-    const coins = new Array(n).fill(0);
+    const result = Array(adjList.length);
 
-    const dfs = (x, p) => {
-        if (cost[x] > 0) {
-            pos[x].add(cost[x]);
+    const dfs = (node, parent) => {
+        // if there is no nodes in adjacency list other than parent node
+        if (adjList[node].length === 1 && node !== 0) {
+            result[node] = 1;
+            if (cost[node] < 0) {
+                return [0, [], [cost[node]]];
+            }
+            return [0, [cost[node]], []];
+        }
+
+        // 3 max positive costs
+        const costs = cost[node] <= 0 ? [] : [cost[node]];
+        // 2 min negative costs
+        const negativeCosts = cost[node] < 0 ? [cost[node]] : [];
+
+        // subtree of the current node is number of nodes childrens + node itself
+        let currentSubtrees = node === 0 ? adjList[node].length + 1 : adjList[node].length;
+
+        // iterate through nodes
+        for (const nextNode of adjList[node]) {
+            if (nextNode === parent) continue;
+            // return from child node what is the count of the subtree
+            // list of 3 highest costs and list of 2 smallest negative costs
+            const [childSubtree, positive, negative] = dfs(nextNode, node);
+
+            // take the max of the currentSubtree and subtrees from child nodes
+            // + 1 -> because we need to calculate in the current node
+            currentSubtrees = Math.max(currentSubtrees, childSubtree + 1);
+
+            // merge result arrays with current arrays
+            // sort arrays - positive costs DESC, and negative costs ASC
+            // remove more than 3 elements from positive costs
+            // remove more than 2 elements from negative costs
+            negativeCosts.push(...negative);
+            negativeCosts.sort((a, b) => a - b);
+            costs.push(...positive);
+            costs.sort((a, b) => b - a);
+            while (costs.length > 3) costs.pop();
+            while (negativeCosts.length > 2) negativeCosts.pop();
+        }
+
+        // if subtree is less than 3 then result will be 1
+        if (currentSubtrees < 3) {
+            result[node] = 1;
         } else {
-            neg[x].add(cost[x]);
+            let product = 0;
+            let negativeProduct = 0;
+            // if we have 3 positive costs then multiply them
+            if (costs.length === 3) product = costs[0] * costs[1] * costs[2];
+            // if we have 2 negative, multiply them 
+            // we need to check if we have at least one positive
+            // if there is no positive then we will need to take 3 negatives with result < 0
+            if (negativeCosts.length === 2 && costs.length > 0) {
+                negativeProduct = (costs[0] ?? 1) * negativeCosts[0] * negativeCosts[1];
+            }
+
+            result[node] = Math.max(product, negativeProduct);
         }
 
-        for (const y of edge[x]) {
-            if (y === p) continue;
-            dfs(y, x);
+        return [currentSubtrees, costs, negativeCosts];
+    }
 
-            pos[x] = new Set([...pos[x], ...pos[y]]);
-            neg[x] = new Set([...neg[x], ...neg[y]]);
-
-            pos[x] = Array.from(pos[x]).sort((a, b) => a - b).slice(0, 3);
-            neg[x] = Array.from(neg[x]).sort((a, b) => b - a).slice(0, 3);
-        }
-
-        const ps = pos[x].size, ns = neg[x].size;
-
-        if (ps + ns < 3) {
-            coins[x] = 1;
-        } else {
-            let mx = Number.MIN_SAFE_INTEGER;
-
-            if (ps >= 3) {
-                const [lst, slst, tlst] = Array.from(pos[x]).slice(-3);
-                mx = Math.max(mx, lst * slst * tlst);
-            }
-            if (ns >= 2 && ps >= 1) {
-                const [lst, slst] = Array.from(neg[x]).slice(0, 2);
-                const tlst = Math.max(...Array.from(pos[x]));
-                mx = Math.max(mx, lst * slst * tlst);
-            }
-            if (mx > 0) {
-                coins[x] = mx;
-            }
-        }
-    };
-
-    dfs(0, -1);
-    return coins;
+    dfs(0);
+    return result;
 };
-
