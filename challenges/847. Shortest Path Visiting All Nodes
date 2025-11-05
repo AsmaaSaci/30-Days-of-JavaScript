@@ -1,0 +1,34 @@
+/**
+ * @param {number[][]} graph
+ * @return {number}
+ */
+var shortestPathLength = function(graph) {
+    const n = graph.length;
+    const targetMask = (1 << n) - 1;
+    
+    const queue = [];
+    const visited = new Set();
+    
+    for (let i = 0; i < n; i++) {
+        queue.push([i, 1 << i, 0]);
+        visited.add(`${i},${1 << i}`);
+    }
+    
+    while (queue.length > 0) {
+        const [node, state, distance] = queue.shift();
+        
+        if (state === targetMask) {
+            return distance;
+        }
+        
+        for (const neighbor of graph[node]) {
+            const newState = state | (1 << neighbor);
+            const key = `${neighbor},${newState}`;
+            
+            if (!visited.has(key)) {
+                visited.add(key);
+                queue.push([neighbor, newState, distance + 1]);
+            }
+        }
+    }    
+};
