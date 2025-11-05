@@ -1,0 +1,1 @@
+poorPigs=f=(b,d,t,c=1)=>c<b?1+f(b,d,t,c*((t/d|0)+1)):0
