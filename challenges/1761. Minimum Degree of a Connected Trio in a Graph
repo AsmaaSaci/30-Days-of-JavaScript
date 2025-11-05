@@ -1,0 +1,52 @@
+/**
+ * @param {number} n
+ * @param {number[][]} edges
+ * @return {number}
+ */
+var minTrioDegree = function(n, edges) {
+    function Node(i) {
+        this.i = i
+        this.neighSet = new Set()
+        this.degree = 0
+    }
+
+    // create nodes
+    const nodes = new Array(n)
+    for (const i of nodes.keys())
+        nodes[i] = new Node(i)
+    
+    // connect nodes
+    for (const [f, t] of edges) {
+        const F = nodes[f - 1], T = nodes[t - 1]
+        F.degree++
+        T.degree++
+
+        if (f < t) {
+            F.neighSet.add(T)
+        } else {
+            T.neighSet.add(F)
+        }
+    }
+
+
+    let result = Infinity
+    // the 3D loops
+    for (const node of nodes) {
+        const { neighSet, degree } = node
+
+        for (const A of neighSet) {
+            const degreeA = A.degree
+            for (const B of A.neighSet) {
+                if (neighSet.has(B)) {
+                    // a trio is found
+                    const outcome = degree + degreeA + B.degree - 6
+                    result = Math.min(result, outcome)
+                }
+            }
+        }
+    }
+        
+
+    if (result === Infinity)    result = -1
+    return result
+};
