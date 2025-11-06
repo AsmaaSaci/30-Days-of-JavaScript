@@ -1,0 +1,39 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int val=0, TreeNode left=null, TreeNode right=null) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+public class Solution {
+    public TreeNode ConvertBST(TreeNode root) {
+        // right-root-left:
+        int rightSum = 0;
+        Stack<TreeNode> stk = new();
+        TreeNode cur = root;
+
+        while(stk.Count > 0 || cur != null)
+        {
+            if(cur == null)
+            {
+                cur = stk.Pop();
+                cur.val += rightSum;
+                rightSum = cur.val;
+                cur = cur.left;
+            }
+            else
+            {
+                stk.Push(cur);
+                cur = cur.right;
+            }
+        }
+
+        return root;
+    }
+}
