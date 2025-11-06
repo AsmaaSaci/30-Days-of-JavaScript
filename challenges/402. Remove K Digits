@@ -1,0 +1,43 @@
+public class Solution {
+    public string RemoveKdigits(string num, int k) {
+        if(num.Length == k) return "0";
+        var st = new Stack<int>();
+
+        foreach(char ch in num){
+            while(st.Count > 0 && k > 0 && st.Peek() > ch - '0'){
+                st.Pop();
+                k--;
+            }
+            st.Push(ch-'0');
+        }
+
+        while(k>0){
+            st.Pop();
+            k--;
+        }
+
+        StringBuilder res = new StringBuilder();
+        /*
+
+        0
+        0
+        2
+        0
+        */
+        while(st.Count > 0){
+
+            res.Insert(0, st.Pop().ToString());   
+        }
+
+        int i = 0;
+        while(i<res.Length && res[i] == '0'){
+            i++;
+        }
+
+        if(i==res.Length || res.Length == 0) return "0";
+        res.Remove(0, i);
+        return res.ToString();
+    }
+
+   
+}
