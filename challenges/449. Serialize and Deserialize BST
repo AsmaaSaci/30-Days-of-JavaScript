@@ -1,0 +1,63 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int x) { val = x; }
+ * }
+ */
+public class Codec {
+
+    // Encodes a tree to a single string.
+    public string serialize(TreeNode root) {
+        
+        List<string> result = new List<string>();
+        Serializer(root,result);
+        
+        return string.Join(",",result);
+
+        
+    }
+
+    private void Serializer(TreeNode node,List<string> result)
+    {
+        if(node==null) return;
+        result.Add(node.val.ToString());
+        Serializer(node.left,result);
+        Serializer(node.right,result);
+
+        
+    }
+
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(string data) {
+        if(string.IsNullOrEmpty(data)) return null;
+        Queue<int> values =new Queue<int>(Array.ConvertAll(data.Split(','), int.Parse));
+        
+        return GenerateTree(values, int.MinValue, int.MaxValue);
+        
+    }
+
+    private TreeNode  GenerateTree(Queue<int> values,int min,int max)
+    {
+        if(values.Count ==0 ) return null;
+
+        int val = values.Peek();
+
+        if(val< min || val > max) return null;
+
+        values.Dequeue();
+
+        TreeNode node=new TreeNode(val);
+        node.left = GenerateTree(values,min,val);
+        node.right = GenerateTree(values,val,max);
+
+
+        return node;
+
+    }
+
+
+}
