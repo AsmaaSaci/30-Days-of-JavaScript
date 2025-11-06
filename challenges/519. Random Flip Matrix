@@ -1,0 +1,29 @@
+public class Solution {
+    Dictionary<int, int> map = new();
+    int m,n,rem;
+    Random rand = new Random();
+    public Solution(int m, int n) {
+        this.m = m;
+        this.n = n;
+        rem = m*n;
+    }
+    
+    public int[] Flip() {
+        int r = rand.Next(0, --rem);
+        int x = map.ContainsKey(r)?map[r]:map[r] = r;
+        map[r] = map.ContainsKey(rem)?map[rem]:map[rem] = rem;
+        return new int[] {x/n, x%n};
+    }
+    
+    public void Reset() {
+        map.Clear();
+        rem = m*n;
+    }
+}
+
+/**
+ * Your Solution object will be instantiated and called as such:
+ * Solution obj = new Solution(m, n);
+ * int[] param_1 = obj.Flip();
+ * obj.Reset();
+ */
