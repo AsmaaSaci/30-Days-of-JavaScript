@@ -1,0 +1,17 @@
+public class Solution {
+    public string ComplexNumberMultiply(string num1, string num2)
+    {
+        string[] temp = num1.Split('+');
+        int r1 = Convert.ToInt32(temp[0]);
+        int i1 =  Convert.ToInt32(temp[1][..^1]);
+        temp = num2.Split('+');
+        int r2 = Convert.ToInt32(temp[0]);
+        int i2 = Convert.ToInt32(temp[1][..^1]);
+
+        int r = 0, i = 0;
+        r = r1 * r2 - i1 * i2;
+        i = r1 * i2 + r2 * i1;
+
+        return $"{r}+{i}i";
+    }
+}
