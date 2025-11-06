@@ -1,0 +1,29 @@
+public class Solution {
+    public bool CheckInclusion(string s1, string s2) {
+        if (s1.Length > s2.Length) return false;
+        var currWindow = new int[26];
+        foreach(var ch in s1) {
+            currWindow[ch - 'a']++;
+        }
+
+        var left = 0;
+        var right = 0;
+
+        while(right < s2.Length) {
+            var currChar = s2[right];
+            currWindow[currChar - 'a']--;
+
+            while(currWindow[currChar - 'a'] < 0) {
+                currWindow[s2[left] - 'a']++;
+                left++;
+            }
+
+            right++;
+            if(right - left == s1.Length) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
