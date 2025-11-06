@@ -1,0 +1,29 @@
+public class Solution {
+ private Dictionary<int, List<int>> indices;
+    public Solution(int[] nums) {
+         indices = new Dictionary<int, List<int>>();
+ for (int i = 0; i < nums.Length; i++)
+ {
+     if (!indices.ContainsKey(nums[i]))
+     {
+         indices[nums[i]] = new List<int>();
+     }
+     indices[nums[i]].Add(i);
+ }
+    }
+    
+    public int Pick(int target) {
+        Random random = new Random();
+List<int> targetIndices = indices.ContainsKey(target) ? indices[target] : new List<int>();
+
+int randomIndex = random.Next(0, targetIndices.Count);
+
+return targetIndices[randomIndex];
+    }
+}
+
+/**
+ * Your Solution object will be instantiated and called as such:
+ * Solution obj = new Solution(nums);
+ * int param_1 = obj.Pick(target);
+ */
