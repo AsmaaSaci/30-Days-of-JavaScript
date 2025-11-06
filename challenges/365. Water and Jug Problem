@@ -1,0 +1,5 @@
+let canMeasureWater = function (x, y, target) {
+    if (x + y < target) return false;
+    const div = (a, b) => b === 0 ? a : div(b, a % b);
+    return target % div(x, y) === 0;
+}
