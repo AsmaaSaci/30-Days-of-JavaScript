@@ -1,0 +1,18 @@
+public class Solution {
+    public bool JudgeSquareSum(int c) {
+        // case 1 : c itself is a square number:
+        int sq = (int)Math.Sqrt(c);
+        if(sq*sq == c)
+            return true;
+
+        for(int i = 1; i <= sq; i++)
+        {
+            int par2 = c - i*i;
+            int tmpSq = (int)Math.Sqrt(par2);
+            if(tmpSq * tmpSq == par2)
+                return true;
+        }
+
+        return false;
+    }
+}
