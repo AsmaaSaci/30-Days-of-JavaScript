@@ -1,0 +1,27 @@
+public class Solution {
+    public int MagicalString(int n) {
+        if (n <= 0) 
+            return 0;
+        if (n <= 3) 
+            return 1;   
+
+        int[] s = new int[n + 1];
+        s[0] = 1; 
+        s[1] = 2; 
+        s[2] = 2;
+        int tail = 3, num = 1, result = 1;  
+
+        for (int i = 2; tail < n; i++) 
+        {
+            for (int j = 0; j < s[i] && tail < n; j++) 
+            {
+                s[tail++] = num;
+                if (num == 1) 
+                    result++; 
+            }
+            num = num == 1 ? 2 : 1; 
+        }
+
+        return result;
+    }
+}
