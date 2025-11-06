@@ -1,0 +1,23 @@
+/**
+ * The Rand7() API is already defined in the parent class SolBase.
+ * public int Rand7();
+ * @return a random integer in the range 1 to 7
+ */
+public class Solution : SolBase {
+    public int Rand10() {
+        while(true) {
+
+            int i = Rand7();
+            while(i == 7) i = Rand7();
+
+            // i now uniformly distributed between 1 and 6 due to rejection sampling
+
+            bool b = i % 2 == 0; // random, uniformly distributed boolean
+
+            i = b ? Rand7() : Rand7() + 7; // random, uniformly distributed int between 1 and 14
+
+            // rejection sampling from Rand14() to Rand10()
+            if(i <= 10) return i;
+        }
+    }
+}
