@@ -1,0 +1,28 @@
+public class Solution {
+    public int IntegerReplacement(int n) {
+         if (n == int.MaxValue)
+     return 32;
+
+ int counter = 0;
+
+ while (n > 1)
+ {
+     if (n % 2 == 0)
+     {
+         n /= 2;
+     }
+     else if (n == 3 || n % 4 == 1)
+     {
+         n--;
+     }
+     else
+     {
+         n++;
+     }
+
+     counter++;
+ }
+
+ return counter;
+    }
+}
