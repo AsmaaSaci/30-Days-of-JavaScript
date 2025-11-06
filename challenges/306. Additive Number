@@ -1,0 +1,18 @@
+var isAdditiveNumber = function(num) {
+    const isValid = (a, b, s) => {
+        if (s.length === 0) return true;
+        const sum = (a + b).toString();
+        return s.startsWith(sum) && isValid(b, parseInt(sum), s.slice(sum.length));
+    };
+
+    const n = num.length;
+    for (let i = 1; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            const a = num.slice(0, i);
+            const b = num.slice(i, j);
+            if ((a.startsWith('0') && a.length > 1) || (b.startsWith('0') && b.length > 1)) continue;
+            if (isValid(parseInt(a), parseInt(b), num.slice(j))) return true;
+        }
+    }
+    return false;
+};
