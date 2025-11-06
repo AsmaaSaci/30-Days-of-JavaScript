@@ -1,0 +1,25 @@
+public class Solution {
+    public int CharacterReplacement(string s, int k) {
+        int l = 0, resp = 0;;
+        Dictionary<char, int> charCounts = new Dictionary<char, int>();
+        int maxf = 0;
+        for(int r = 0; r<s.Length; r++){
+            int currCount = charCounts.GetValueOrDefault(s[r], 0);
+            charCounts[s[r]] = ++currCount;
+
+            if(maxf < charCounts[s[r]])
+                maxf = charCounts[s[r]];
+            
+            int windowSize = (r - l)+1;
+            if((windowSize - maxf) <= k && resp < windowSize){
+                resp = windowSize;
+            }
+            else{
+                charCounts[s[l]] = --charCounts[s[l]];
+                l++;
+            }
+        }
+
+        return resp;
+    }
+}
