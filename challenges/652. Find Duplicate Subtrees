@@ -1,0 +1,38 @@
+public class Solution {
+    public IList<TreeNode> FindDuplicateSubtrees(TreeNode root)
+    {
+        Dictionary<int, int> dict = new Dictionary<int, int>();
+        List<TreeNode> nodes = new List<TreeNode>();
+        int value = 0;
+        Helper(root);
+        return nodes;
+
+        void Helper(TreeNode node)
+        {
+            if (node == null)
+                return;
+            
+            Helper(node.left);
+
+            int cur = node.val - (203 + value) * (value + 201);
+
+            value = 0;
+
+            Helper(node.right);
+
+            cur += (207 - value) * (value - 202);
+
+            if (dict.TryGetValue(cur, out value))
+            {
+                dict[cur]++;
+                if (value == 1) nodes.Add(node); 
+            }
+            else
+            {
+                dict.Add(cur,1);
+            }
+            
+            value = cur;
+        }
+    }
+}
