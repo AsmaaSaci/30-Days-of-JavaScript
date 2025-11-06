@@ -1,0 +1,14 @@
+let isValidSerialization = function (preorder) {
+    let balance = 1;
+
+    for (const node of preorder.split(',')) {
+        if (balance > 0) {
+            if (node === '#') --balance;
+            else ++balance;
+        }
+
+        else return false;
+    }
+
+    return balance < 1;
+}
