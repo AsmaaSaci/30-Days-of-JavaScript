@@ -1,0 +1,27 @@
+public class Solution {
+    public int LongestSubstring(string s, int k) {
+        if (s.Length < k) return 0;
+var freqMap = new Dictionary<char, int>();
+foreach (char c in s)
+{
+    if (freqMap.ContainsKey(c))
+        freqMap[c]++;
+    else
+        freqMap[c] = 1;
+}
+foreach (var entry in freqMap)
+{
+    if (entry.Value < k)
+    {
+        char c = entry.Key;
+        int maxLength = 0;
+        foreach (string subs in s.Split(c))
+        {
+            maxLength = Math.Max(maxLength, LongestSubstring(subs, k));
+        }
+        return maxLength;
+    }
+}
+return s.Length;
+    }
+}
