@@ -1,0 +1,1 @@
+grep -o "\w*" words.txt | sort | uniq -c | sort -g -r | sed -r 's/\s*([0-9]+) (\w+)/\2 \1/g'
