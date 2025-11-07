@@ -1,0 +1,46 @@
+class Solution {
+    canReachCorner(X, Y, A) {
+        const n = A.length;
+        const f = Array.from({ length: n + 2 }, (_, i) => i);
+
+        const find = (f, i) => {
+            if (f[i] !== i) {
+                f[i] = find(f, f[i]);
+            }
+            return f[i];
+        };
+
+        const union = (f, i, j) => {
+            f[find(f, i)] = find(f, j);
+        };
+
+        for (let i = 0; i < n; i++) {
+            const [x, y, r] = A[i];
+
+            if (x - r <= 0 || y + r >= Y) {
+                union(f, n, i);
+            }
+
+            if (x + r >= X || y - r <= 0) {
+                union(f, n + 1, i);
+            }
+
+            for (let j = 0; j < i; j++) {
+                const [x2, y2, r2] = A[j];
+
+                if ((x - x2) ** 2 + (y - y2) ** 2 <= (r + r2) ** 2) {
+                    union(f, i, j);
+                }
+            }
+        }
+
+        return find(f, n) !== find(f, n + 1);
+    }
+}
+
+// Example usage:
+const solution = new Solution();
+const X = 3;
+const Y = 4;
+const circles = [[2, 1, 1]];
+console.log(solution.canReachCorner(X, Y, circles)); // Output: true
