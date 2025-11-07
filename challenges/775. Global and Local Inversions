@@ -1,0 +1,28 @@
+public class Solution {
+    public bool IsIdealPermutation(int[] nums) {
+        int len = nums.Length;
+        int[] rightMin = new int[len];
+        rightMin[len-1] = nums[len-1];
+
+        for(int i = len-2; i >= 0; i--)
+        {
+            rightMin[i] = Math.Min(nums[i], rightMin[i+1]);
+        }
+
+        for(int i = 0; i < len-1; i++)
+        {
+            if(nums[i] > nums[i+1])
+            {
+                if(i < len-2 && nums[i] > rightMin[i+2])
+                    return false;
+            }
+            else if(nums[i] < nums[i+1])
+            {
+                if(rightMin[i+1] < nums[i])
+                    return false;
+            }
+        }
+
+        return true;
+    }
+}
