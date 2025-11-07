@@ -1,0 +1,84 @@
+public class Solution {
+    private bool CanSwap(string a, string target)
+    {
+        char[] sample = a.ToCharArray();
+        int len = a.Length;
+
+        // XL-> LX; RX->XR:
+        for(int i = 0; i < len; i++)
+        {
+            if(sample[i] == target[i])
+                continue;
+
+            if(i == len-1)
+                return false;
+                
+            char c = sample[i];
+            if(c == 'L')
+                return false;
+
+            if(c == 'X')
+            {
+                if(sample[i+1] != 'L' || target[i] != 'L' )
+                    return false;
+            }
+            else if(c == 'R')
+            {
+                if(sample[i+1] != 'X' || target[i] != 'X')
+                    return false;
+            }
+            else
+                return false;
+
+            sample[i] = sample[i+1];
+            sample[i+1] = c;
+        }
+
+        return true;
+    }
+    public bool CanTransform(string start, string result) {
+        // XL -> LX; RX -> XR
+        int len = start.Length;
+        int idS = 0, idR = 0;
+
+        while(idS < len && idR < len)
+        {
+            while(idS < len && start[idS] == 'X') // count dup 'X' in start string
+            {
+                idS++;
+            }
+
+            while(idR < len && result[idR] == 'X') // count dp 'X' in result string
+            {
+                idR++;
+            }
+
+            if(idS == len && idR == len) // case : both strigs arrive to the end
+                return true;
+
+            if(idS == len || idR == len || start[idS] != result[idR]) // case different character on the right side of 'X's
+                return false;
+
+            if(start[idS] == 'R' && idS > idR) // case : 'XXXR' -> R only possible swap to right side
+                return false;
+
+            if(start[idS] == 'L' && idS < idR) // case : "XXXL" -> L only possible swap to left side;
+                return false;
+
+            idS++;
+            idR++;
+        }
+
+        while(idS < len && start[idS] == 'X')
+        {
+            idS++;
+        }
+
+        while(idR < len && result[idR] == 'X')
+        {
+            idR++;
+        }
+
+        return idS == len && idR == len;
+    }
+}
