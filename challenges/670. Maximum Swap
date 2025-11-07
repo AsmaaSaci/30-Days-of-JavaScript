@@ -1,0 +1,46 @@
+public class Solution {
+        public int MaximumSwap(int num) //* 670 Maximum Swap
+    {
+        int[] registry = new int[10]; //* Keeps indexes of numbers as index + 1.
+        
+        int n = num, index = 1, max = 0;
+        
+        while (n != 0)
+        {
+            int current = n % 10;
+            
+            //* Calculates differance as choose maximum number before current number.
+            //* If difference that will occur after the swap bigger than max, max = difference.
+            for (int i = 9; i > current; i--) 
+            {
+                if (registry[i] == 0)
+                    continue;
+
+                int difference = (TenPow(index - 1) - TenPow(registry[i] - 1)) * (i - current);
+
+                if (difference > max)
+                    max = difference;
+                break;
+            }
+            
+            //* If there is no current digit add in registry, registry = index.
+            if (registry[current] == 0)
+                registry[current] = index;
+
+            index++;
+            n /= 10;
+        }
+        
+        return num + max; //* returns max difference + number.
+
+        int TenPow(int pow) //* returns 10^pow.
+        {
+            int i = 1;
+
+            for (int j = 0; j < pow; j++)
+                i *= 10;
+
+            return i;
+        }
+    }
+}
