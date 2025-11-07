@@ -1,0 +1,38 @@
+public class Solution {
+    public IList<string> LetterCasePermutation(string s) {
+        s = s.ToLower(); // convert the characters to lower case;
+        // loop string and store char index:
+        List<int> cIds = new();
+        int len = s.Length;
+        for(int i = 0; i < len; i++)
+        {
+            if(char.IsLetter(s[i]))
+                cIds.Add(i);
+        }
+
+        HashSet<string> res = new();
+        int cLen = cIds.Count;
+        if(cLen == 0)
+        {
+            res.Add(s);
+            return res.ToList();
+        }
+
+        Queue<(string, int)> que = new();
+        que.Enqueue((s, 0));
+        while(que.Count > 0)
+        {
+            (string curS, int curIdx) = que.Dequeue();
+            res.Add(curS);
+            if(curIdx == cLen)
+                continue;
+
+            int sId = cIds[curIdx];
+            string upCaseS = curS.Substring(0, sId) + ((char)(curS[sId]-'a'+'A')) + curS.Substring(sId+1);
+            que.Enqueue((upCaseS, curIdx+1));
+            que.Enqueue((curS, curIdx+1));
+        }
+
+        return res.ToList();
+    }
+}
