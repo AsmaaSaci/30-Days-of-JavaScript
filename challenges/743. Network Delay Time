@@ -1,0 +1,41 @@
+public class Solution {
+    public int NetworkDelayTime(int[][] times, int n, int k) 
+    {
+        List<List<(int node, int wt)>> adjList = new();
+        
+        for(int i=0; i<=n; i++)
+            adjList.Add(new());
+        
+        foreach(var edge in times)
+            adjList[edge[0]].Add((edge[1],edge[2]));
+        
+        int[] minDis = new int[n+1];
+        Array.Fill(minDis,int.MaxValue);
+        minDis[k] = 0;
+        
+        PriorityQueue<int,int> qu = new();
+        qu.Enqueue(k,0);
+        
+        while(qu.Count>0)
+        {
+            var cur = qu.Dequeue();
+            
+            foreach(var nd in adjList[cur])
+            {
+                if(minDis[nd.node] > minDis[cur] + nd.wt)
+                {
+                    minDis[nd.node] = minDis[cur] + nd.wt;
+                    qu.Enqueue(nd.node, minDis[nd.node]);
+                }
+            }
+        }
+        
+        int maxDis = 0;
+        
+        for(int i=1;i<=n;i++)
+            maxDis = Math.Max(maxDis,minDis[i]);
+        
+        return maxDis==int.MaxValue ? -1 : maxDis;
+        
+    }
+}
