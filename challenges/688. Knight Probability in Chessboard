@@ -1,0 +1,46 @@
+public class Solution {
+    public double KnightProbability(int n, int k, int row, int column) {
+        Dictionary<(int, int), List<(int, int)>> dict = new();
+
+        Queue<(int, int)> que = new();
+        int[][] dirs = [[1, 2], [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]];
+        double[,] dp = new double[n, n];
+        dp[row, column] = 1.0;
+        double prob = 0.0;
+        for(int step = 1; step <= k; step++)
+        {
+            double[,] nextDP = new double[n,n];
+            for(int r = 0; r < n; r++)
+            {
+                for(int c = 0; c < n; c++)
+                {
+                    if(dp[r, c] > 0)
+                    {
+                        double cur = dp[r, c];
+                        foreach(int[] id in dirs)
+                        {
+                            int newR = r + id[0], newC = c + id[1];
+                            if(newR < 0 || newC < 0 || newR >= n || newC >= n)
+                                continue;
+
+                            nextDP[newR, newC] += cur/8.0;
+                        }
+                    }
+                }
+            }
+
+            prob = 0.0;
+            for(int i = 0; i < n; i++)
+            {
+                for(int j = 0; j < n; j++)
+                {
+                    dp[i,j] = nextDP[i,j];
+                    prob += dp[i,j];
+                    Console.WriteLine($"{i}, {j}, prob {prob}");
+                }
+            }
+        }
+
+        return k == 0 ? 1 : prob;
+    }
+}
