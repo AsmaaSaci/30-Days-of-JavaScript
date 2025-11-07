@@ -1,0 +1,63 @@
+public class MapSum {
+private Dictionary<string, int> dict;
+private TrieNode root;
+ public class TrieNode
+ {
+     public Dictionary<char, TrieNode> children;
+     public HashSet<string> prefixSet;
+     public TrieNode()
+     {
+         children = new Dictionary<char, TrieNode>();
+         prefixSet = new HashSet<string>();
+     }
+
+ }
+    public MapSum() {
+         root = new TrieNode();
+ dict = new Dictionary<string, int>();
+    }
+    
+    public void Insert(string key, int val) {
+        if (!dict.ContainsKey(key))
+{
+    dict.Add(key, val);
+    var curNode = root;
+    foreach (char c in key)
+    {
+        if (!curNode.children.ContainsKey(c))
+            curNode.children.Add(c, new TrieNode());
+
+        curNode = curNode.children[c];
+        curNode.prefixSet.Add(key);
+    }
+
+}
+else
+    dict[key] = val;
+    }
+    
+    public int Sum(string prefix) {
+         var curNode = root;
+ foreach (char c in prefix)
+ {
+     if (curNode.children.ContainsKey(c))
+         curNode = curNode.children[c];
+     else
+         return 0;
+ }
+ int sum = 0;
+ foreach (string s in curNode.prefixSet)
+ {
+     sum += dict[s];
+ }
+
+ return sum;
+    }
+}
+
+/**
+ * Your MapSum object will be instantiated and called as such:
+ * MapSum obj = new MapSum();
+ * obj.Insert(key,val);
+ * int param_2 = obj.Sum(prefix);
+ */
