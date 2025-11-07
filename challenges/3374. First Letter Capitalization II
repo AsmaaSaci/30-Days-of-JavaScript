@@ -1,0 +1,46 @@
+WITH RECURSIVE split AS (
+    -- Anchor member: take the first word
+    SELECT 
+        content_id,
+        content_text AS original_text,
+        TRIM(SUBSTRING_INDEX(content_text,' ',1)) AS word,
+        TRIM(SUBSTRING(content_text, LENGTH(SUBSTRING_INDEX(content_text,' ',1)) + 2)) AS rest,
+        1 AS pos
+    FROM user_content
+    UNION ALL
+    -- Recursive member: take next word
+    SELECT
+        content_id,
+        original_text,
+        TRIM(SUBSTRING_INDEX(rest,' ',1)) AS word,
+        TRIM(SUBSTRING(rest, LENGTH(SUBSTRING_INDEX(rest,' ',1)) + 2)) AS rest,
+        pos + 1
+    FROM split
+    WHERE rest <> ''
+),
+-- Capitalize words, including hyphenated words
+capitalized AS (
+    SELECT 
+        content_id,
+        original_text,
+        pos,
+        CASE
+            WHEN INSTR(word,'-') = 0 THEN CONCAT(UPPER(LEFT(word,1)), LOWER(SUBSTRING(word,2)))
+            ELSE CONCAT(
+                UPPER(LEFT(SUBSTRING_INDEX(word,'-',1),1)), 
+                LOWER(SUBSTRING(SUBSTRING_INDEX(word,'-',1),2)),
+                '-',
+                UPPER(LEFT(SUBSTRING_INDEX(word,'-',-1),1)),
+                LOWER(SUBSTRING(SUBSTRING_INDEX(word,'-',-1),2))
+            )
+        END AS word
+    FROM split
+)
+-- Reconstruct the sentence
+SELECT 
+    content_id,
+    original_text,
+    TRIM(GROUP_CONCAT(word ORDER BY pos SEPARATOR ' ')) AS converted_text
+FROM capitalized
+GROUP BY content_id, original_text
+ORDER BY content_id;
