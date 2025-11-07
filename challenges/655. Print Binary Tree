@@ -1,0 +1,53 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int val=0, TreeNode left=null, TreeNode right=null) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+public class Solution {
+    private int GetDeps(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+
+        int leftDep = GetDeps(root.left), rightDep = GetDeps(root.right);
+
+        return 1 + Math.Max(leftDep, rightDep);
+    }
+    public IList<IList<string>> PrintTree(TreeNode root) {
+        int m = GetDeps(root);
+        int col = (int)Math.Pow(2, m)-1;
+
+        Queue<(TreeNode, int, int)> que = new();
+        que.Enqueue((root, 0, col-1));
+        List<IList<string>> res = new();
+        while(que.Count > 0)
+        {
+            int qLen = que.Count;
+            List<string> tmp = Enumerable.Repeat("", col).ToList();
+            for(int i = 0; i < qLen; i++)
+            {
+                (TreeNode node, int low, int high) = que.Dequeue();
+                int id = (low+high)/2;
+                tmp[id] = node.val.ToString();
+
+                if(node.left != null)
+                    que.Enqueue((node.left, low, id-1));
+
+                if(node.right != null)
+                    que.Enqueue((node.right, id+1, high));
+            }
+
+            res.Add(tmp);
+        }
+
+        return res;
+    }
+}
