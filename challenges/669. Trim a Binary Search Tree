@@ -1,0 +1,50 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int val=0, TreeNode left=null, TreeNode right=null) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode TrimBST(TreeNode root, int low, int high) {
+        if (root == null) return null; // Base case: If tree is empty, return null.
+
+        // Step 1: Adjust root to a valid starting node within range [low, high]
+        while (root != null && (root.val < low || root.val > high)) {
+            if (root.val < low) {
+                root = root.right; // If root is too small, move to the right subtree (larger values)
+            } else {
+                root = root.left; // If root is too large, move to the left subtree (smaller values)
+            }
+        }
+        
+        // Step 2: Trim the left subtree
+        TreeNode curr = root;
+        while (curr != null) {
+            while (curr.left != null && curr.left.val < low) {
+                // If left child is too small, replace it with its right child (skipping out-of-range nodes)
+                curr.left = curr.left.right;
+            }
+            curr = curr.left; // Move to the next left node
+        }
+
+        // Step 3: Trim the right subtree
+        curr = root;
+        while (curr != null) {
+            while (curr.right != null && curr.right.val > high) {
+                // If right child is too large, replace it with its left child (skipping out-of-range nodes)
+                curr.right = curr.right.left;
+            }
+            curr = curr.right; // Move to the next right node
+        }
+        
+        // Return the trimmed BST
+        return root;
+    }
+}
