@@ -1,0 +1,34 @@
+public class Solution {
+    public int[] FindRedundantConnection(int[][] edges) {
+        int n = edges.Length;
+        int[] parent = new int[n + 1];
+
+        // Initialize each node to be its own parent
+        for (int i = 1; i <= n; i++) {
+            parent[i] = i;
+        }
+
+        foreach (var edge in edges) {
+            int a = edge[0], b = edge[1];
+            int rootA = Find(parent, a);
+            int rootB = Find(parent, b);
+
+            if (rootA == rootB) {
+                // a and b are already connected → cycle detected
+                return edge;
+            }
+
+            // Merge the components
+            parent[rootA] = rootB;
+        }
+
+        return new int[0]; // Should never reach here per problem constraints
+    }
+
+    private int Find(int[] parent, int x) {
+        if (parent[x] != x) {
+            parent[x] = Find(parent, parent[x]); // Path compression
+        }
+        return parent[x];
+    }
+}
