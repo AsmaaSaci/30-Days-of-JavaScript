@@ -1,0 +1,26 @@
+public class Solution {
+    public string ReorganizeString(string s) {
+        Dictionary<char, int> freqMap = new Dictionary<char, int>();
+        foreach (char c in s) {
+            if (!freqMap.ContainsKey(c)) freqMap[c] = 0;
+            freqMap[c]++;
+        }
+
+        List<char> sortedChars = new List<char>(freqMap.Keys);
+        sortedChars.Sort((a, b) => freqMap[b].CompareTo(freqMap[a]));
+
+        if (freqMap[sortedChars[0]] > (s.Length + 1) / 2) return "";
+
+        char[] res = new char[s.Length];
+        int i = 0;
+        foreach (char c in sortedChars) {
+            for (int j = 0; j < freqMap[c]; j++) {
+                if (i >= s.Length) i = 1;
+                res[i] = c;
+                i += 2;
+            }
+        }
+
+        return new string(res);
+    }
+}
