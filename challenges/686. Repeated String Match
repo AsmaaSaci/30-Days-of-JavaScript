@@ -1,0 +1,16 @@
+public class Solution {
+    public int RepeatedStringMatch(string a, string b) {
+        int count = 0;
+        var sb = new StringBuilder();
+
+        while (sb.Length < a.Length + b.Length) {
+            sb.Append(a);
+            count++;
+
+            if (sb.ToString().Contains(b))
+                return count;
+        }
+
+        return -1;
+    }
+}
