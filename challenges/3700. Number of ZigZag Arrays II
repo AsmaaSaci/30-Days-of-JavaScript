@@ -1,0 +1,66 @@
+public class Solution {
+    public int modulo = 1000000007;
+
+    public int ZigZagArrays(int n, int l, int r) {
+        if(r-l<1) return 0;
+        // ...
+        int d = 2 * (r - l + 1);
+        long[,] mat = new long[d, d];
+        for(int i=0; i<d/2; i++){
+            for(int j=0; j<i; j++)
+                mat[i, j + d/2] = 1;
+            for(int j=i+1; j<d/2; j++)
+                mat[i + d/2, j] = 1;
+        }
+
+        // Exponentiate T^(n - 1)
+        long[,] mat_pow = MatrixPower(mat, n - 1, d);
+
+        // Initial vector v0: all ones
+        long[] ones = new long[d];
+        Array.Fill(ones, 1L);
+
+        // Multiply Tn * v0
+        long[] result = MultiplyMatrixVector(mat_pow, ones, d);
+
+        long ans = 0;
+        foreach(long val in result)
+            ans = (ans + val) % modulo;
+
+        return (int) ans;
+    }
+
+     private long[] MultiplyMatrixVector(long[,] mat, long[] vec, int n) {
+        long[] res = new long[n];
+        for (int i = 0; i < n; i++) 
+            for (int j = 0; j < n; j++)
+                res[i] = (res[i] + mat[i,j] * vec[j]) % modulo;
+        return res;
+    }
+
+    private long[,] MultiplyMatrices(long[,] A, long[,] B, int n) {
+        long[,] res = new long[n, n];
+        for (int i = 0; i < n; i++) {
+            for (int k = 0; k < n; k++) {
+                if (A[i, k] == 0) continue;
+                for (int j = 0; j < n; j++)
+                    res[i, j] = (res[i, j] + A[i, k] * B[k, j]) % modulo;
+            }
+        }
+        return res;
+    }
+
+    private long[,] MatrixPower(long[,] mat, int exp, int n) {
+        long[,] res = new long[n, n];
+        for (int i = 0; i < n; i++) res[i, i] = 1;
+
+        while (exp > 0) {
+            if ((exp & 1) == 1) res = MultiplyMatrices(res, mat, n);
+            mat = MultiplyMatrices(mat, mat, n);
+            exp >>= 1;
+        }
+
+        return res;
+    }
+
+}
