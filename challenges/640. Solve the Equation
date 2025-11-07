@@ -1,0 +1,60 @@
+public class Solution {
+    private int[] CalEq(string s)
+    {
+       int cur = 0, len = s.Length, pos = 1;
+       HashSet<char> symbols = new HashSet<char>("+-x");
+        int[] res = [0, 0];
+        for(int i = 0; i < len; i++)
+        {
+            char c = s[i];
+            if(c >= '0' && c <= '9')
+            {
+                int dig = c - '0';
+                cur *= 10;
+                cur += dig * pos;
+            }
+            else
+            {
+                if(c == 'x')
+                {
+                    if(i == 0 || i > 0 && symbols.Contains(s[i-1]))
+                        cur = 1*pos;
+
+                    res[0] += cur;
+                }
+                else
+                {
+                    res[1] += cur;
+                    pos = c == '-' ? -1 : 1;
+                }
+
+                cur = 0;
+            }
+        }
+
+        if(cur != 0)
+            res[1] += cur;
+
+        return res;
+    }
+    public string SolveEquation(string equation) {
+        int idx = 0, len = equation.Length;
+        while(idx < len && equation[idx] != '=')
+        {
+            idx++;
+        }
+
+        int[] p1 = CalEq(equation.Substring(0, idx)), p2 = CalEq(equation.Substring(idx+1));
+
+        for(int i = 0; i < 2; i++)
+        {
+            p1[i] -= p2[i];
+        }
+
+        if(p1[0] == 0)
+            return p1[1] == 0 ? "Infinite solutions" : "No solution";
+
+        p1[1] /= -p1[0];
+        return "x="+p1[1];
+    }
+}
